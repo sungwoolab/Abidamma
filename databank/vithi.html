@@ -1,0 +1,938 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>17심찰나 인식과정 — 아비담마</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@400;500;600&family=Noto+Sans+KR:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0d0f18;--bg2:#131624;--bg3:#1a1e30;--bg4:#20253c;
+  --border:rgba(255,255,255,0.07);--border2:rgba(255,255,255,0.13);
+  --text:#dde1ee;--text2:#8890aa;--text3:#4a5068;
+  --accent:#7c6af5;--accent2:#5b4fd4;
+  --gold:#e2b866;--gold-bg:rgba(226,184,102,0.1);
+  --teal:#4ecdc4;--teal-bg:rgba(78,205,196,0.1);
+  --rose:#f06292;--rose-bg:rgba(240,98,146,0.1);
+  --green:#66bb6a;--green-bg:rgba(102,187,106,0.1);
+  --blue:#5ba8f5;--blue-bg:rgba(91,168,245,0.1);
+  --amber:#ffb74d;--amber-bg:rgba(255,183,77,0.1);
+  --purple:#ce93d8;--purple-bg:rgba(206,147,216,0.1);
+  --grey:#78909c;--grey-bg:rgba(120,144,156,0.1);
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{background:var(--bg);color:var(--text);font-family:'Noto Sans KR',sans-serif;min-height:100vh;font-size:14px;}
+
+/* ── 상단 바 ── */
+.topbar{display:flex;align-items:center;gap:10px;padding:12px 24px;border-bottom:1px solid var(--border);background:var(--bg2);position:sticky;top:0;z-index:200;}
+.logo{font-size:13px;font-weight:500;color:var(--text);display:flex;align-items:center;gap:7px;text-decoration:none;}
+.logo-dot{width:7px;height:7px;border-radius:50%;background:var(--accent);}
+.topbar-title{font-size:12px;color:var(--text3);margin-left:4px;}
+
+/* ── 레이아웃: 상하 구조 ── */
+.layout{display:flex;flex-direction:column;height:calc(100vh - 49px);}
+
+/* ── 인식과정 탭 ── */
+.process-tabs{
+  display:flex;gap:0;border-bottom:1px solid var(--border2);
+  background:var(--bg2);flex-shrink:0;
+  padding:0 20px;
+}
+.ptab{
+  padding:10px 18px;font-size:12px;font-weight:500;
+  color:var(--text3);cursor:pointer;border:none;background:none;
+  font-family:'Noto Sans KR',sans-serif;
+  border-bottom:2px solid transparent;margin-bottom:-1px;
+  transition:all 0.15s;white-space:nowrap;
+}
+.ptab:hover{color:var(--text2);}
+.ptab.active{color:var(--text);border-bottom-color:var(--accent);}
+.ptab-sub{font-size:10px;color:var(--text3);margin-left:5px;}
+
+/* ── 위: 찰나 흐름 (가로 스크롤) ── */
+.top{
+  flex-shrink:0;
+  padding:14px 20px 12px;
+  border-bottom:2px solid var(--border2);
+  background:var(--bg2);
+  overflow-x:auto;
+  overflow-y:hidden;
+}
+.top::-webkit-scrollbar{height:4px;}
+.top::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px;}
+
+/* 인식과정 패널 (탭 전환) */
+.process-panel{display:none;}
+.process-panel.active{display:block;}
+
+.section-title{font-size:10px;font-weight:500;letter-spacing:0.14em;color:var(--text3);text-transform:uppercase;margin-bottom:10px;}
+
+/* 찰나 흐름 — 가로 한 줄 */
+.flow-wrap{
+  display:flex;align-items:flex-start;gap:0;
+  min-width:max-content;
+}
+
+/* 찰나 그룹 */
+.cgroup{display:flex;flex-direction:column;align-items:center;}
+.cgroup-label{
+  font-size:9px;color:var(--text3);letter-spacing:0.06em;
+  margin-bottom:6px;text-align:center;white-space:nowrap;
+}
+.moment-row{display:flex;gap:3px;align-items:flex-start;}
+
+/* 그룹 사이 화살표 */
+.garrow{
+  display:flex;align-items:center;padding:0 4px;
+  color:var(--text3);font-size:11px;
+  margin-top:28px; /* 라벨 높이만큼 내림 */
+}
+
+.moment{
+  display:flex;flex-direction:column;align-items:center;
+  padding:7px 5px 6px;width:58px;
+  border:1px solid var(--border);border-radius:8px;
+  background:var(--bg3);cursor:pointer;
+  transition:all 0.15s;position:relative;
+  user-select:none;flex-shrink:0;
+}
+.moment:hover{border-color:var(--border2);background:var(--bg4);}
+.moment.active{
+  border-color:var(--accent);background:rgba(124,106,245,0.14);
+  box-shadow:0 0 0 1px var(--accent);
+}
+.moment-ko{font-size:10px;font-weight:500;color:var(--text);text-align:center;line-height:1.4;margin-bottom:2px;}
+.moment-pali{font-size:8px;color:var(--text3);text-align:center;line-height:1.3;}
+
+/* 그룹별 색상 */
+.moment.type-bavanga .moment-ko{color:var(--grey);}
+.moment.type-bavanga.active{border-color:var(--grey);background:var(--grey-bg);box-shadow:0 0 0 1px var(--grey);}
+.moment.type-gate .moment-ko{color:var(--blue);}
+.moment.type-gate.active{border-color:var(--blue);background:var(--blue-bg);box-shadow:0 0 0 1px var(--blue);}
+.moment.type-recv .moment-ko{color:var(--purple);}
+.moment.type-recv.active{border-color:var(--purple);background:var(--purple-bg);box-shadow:0 0 0 1px var(--purple);}
+.moment.type-java .moment-ko{color:var(--amber);}
+.moment.type-java.active{border-color:var(--amber);background:var(--amber-bg);box-shadow:0 0 0 1px var(--amber);}
+.moment.type-tada .moment-ko{color:var(--teal);}
+.moment.type-tada.active{border-color:var(--teal);background:var(--teal-bg);box-shadow:0 0 0 1px var(--teal);}
+
+/* 찰나 번호 뱃지 */
+.moment-badge{
+  position:absolute;top:-7px;left:50%;transform:translateX(-50%);
+  font-size:8px;font-weight:700;padding:1px 5px;border-radius:99px;
+  background:var(--bg);border:1px solid var(--border);color:var(--text3);
+  white-space:nowrap;
+}
+.moment.active .moment-badge{background:var(--accent);border-color:var(--accent);color:#fff;}
+
+/* 범례 + 속행버튼 행 */
+.bottom-bar{
+  display:flex;align-items:center;flex-wrap:wrap;gap:10px;
+  margin-top:10px;padding-top:10px;border-top:1px solid var(--border);
+}
+.legend{display:flex;flex-wrap:wrap;gap:8px;}
+.legend-item{display:flex;align-items:center;gap:5px;font-size:10px;color:var(--text2);}
+.legend-dot{width:7px;height:7px;border-radius:2px;flex-shrink:0;}
+.java-label{font-size:10px;color:var(--text3);margin-left:8px;}
+
+/* ── 아래: 마음부수 패널 ── */
+.bottom{flex:1;overflow-y:auto;background:var(--bg);}
+.panel-header{
+  padding:16px 24px 14px;border-bottom:1px solid var(--border);
+  background:var(--bg2);
+  display:flex;flex-wrap:wrap;align-items:baseline;gap:10px;
+}
+.panel-moment-name{font-size:15px;font-weight:500;color:var(--text);font-family:'Noto Serif KR',serif;}
+.panel-moment-pali{font-size:11px;color:var(--text3);}
+.panel-moment-desc{width:100%;font-size:12px;color:var(--text2);margin-top:4px;line-height:1.6;}
+
+.panel-body{padding:14px 24px 24px;}
+
+/* 총계 행 */
+.total-row{display:flex;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:14px;}
+.total-label{font-size:11px;color:var(--text3);}
+.total-num{font-size:14px;font-weight:700;}
+.note-badge{font-size:10px;color:var(--text3);padding:3px 9px;border-radius:4px;background:var(--bg3);line-height:1.5;}
+
+/* ── 4열 그리드 ── */
+.ceta-4grid{
+  display:grid;
+  grid-template-columns:repeat(4,1fr);
+  gap:10px;
+}
+/* 상단 2열 (반드시공통·때때로공통) */
+.ceta-4grid .span2{grid-column:span 2;}
+
+/* 마음부수 섹션 */
+.ceta-section{
+  background:var(--bg2);border:1px solid var(--border);
+  border-radius:10px;padding:12px;
+  display:flex;flex-direction:column;gap:8px;
+}
+.ceta-section-head{
+  display:flex;align-items:center;gap:7px;
+  padding-bottom:8px;border-bottom:1px solid var(--border);
+}
+.sec-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0;}
+.sec-title{font-size:11px;font-weight:500;color:var(--text2);}
+.sec-title em{font-style:normal;font-size:9px;color:var(--text3);display:block;margin-top:1px;}
+.sec-count{font-size:10px;color:var(--text3);margin-left:auto;white-space:nowrap;}
+
+.ceta-grid{display:flex;flex-wrap:wrap;gap:4px;}
+.ceta-tag{
+  display:inline-flex;align-items:center;
+  padding:3px 7px;border-radius:4px;font-size:11px;
+  border:1px solid transparent;line-height:1.3;
+  transition:opacity 0.15s;
+}
+.ceta-tag .pali{font-size:8px;opacity:0.55;margin-left:3px;}
+.ceta-tag .subg{font-size:8px;opacity:0.4;margin-left:3px;padding-left:3px;border-left:1px solid currentColor;}
+
+/* ── 6가지 색상 클래스 ── */
+.c-universal{background:rgba(200,210,230,0.07);border-color:rgba(200,210,230,0.15);color:#9aa8be;}
+.c-particular{background:rgba(206,147,216,0.13);border-color:rgba(206,147,216,0.3);color:#ce93d8;}
+/* 불선 반드시들 — 진한 빨강 */
+.c-unw-always{background:rgba(240,98,146,0.18);border-color:rgba(240,98,146,0.45);color:#f48fb1;}
+/* 불선 때때로들 — 연한 빨강 */
+.c-unw-occ{background:rgba(240,98,146,0.08);border-color:rgba(240,98,146,0.22);color:#e07090;}
+/* 선 반드시들 — 확실한 초록 */
+.c-whol-always{background:rgba(100,200,100,0.18);border-color:rgba(100,200,100,0.5);color:#81c784;}
+/* 선 때때로들 — 연한 초록 */
+.c-whol-occ{background:rgba(100,200,100,0.08);border-color:rgba(100,200,100,0.25);color:#a5d6a7;}
+
+/* 비활성 */
+.c-inactive{opacity:0.15;filter:grayscale(1);}
+
+/* 무기 안내 */
+.neutral-note{
+  font-size:11px;color:var(--text3);
+  padding:12px 14px;border-radius:8px;
+  background:var(--bg2);border:1px solid var(--border);
+  line-height:1.6;grid-column:span 4;
+}
+
+/* 힌트 */
+.hint{padding:32px 24px;text-align:center;color:var(--text3);font-size:12px;line-height:1.8;}
+.hint-icon{font-size:32px;margin-bottom:12px;opacity:0.4;}
+}
+@media(max-width:900px){
+  .ceta-4grid{grid-template-columns:repeat(2,1fr);}
+  .ceta-4grid .span2{grid-column:span 2;}
+  .neutral-note{grid-column:span 2;}
+}
+@media(max-width:500px){
+  .ceta-4grid{grid-template-columns:1fr;}
+  .ceta-4grid .span2,.neutral-note{grid-column:span 1;}
+}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <a class="logo" href="index.html"><span class="logo-dot"></span>아비담마</a>
+  <span class="topbar-title">/ 17심찰나 인식과정</span>
+</div>
+
+<div class="layout">
+
+  <!-- ── 인식과정 탭 선택 ── -->
+  <div class="process-tabs">
+    <button class="ptab active" onclick="switchProcess('panca',this)">
+      오문인식과정<span class="ptab-sub">Pañcadvāra-vīthi</span>
+    </button>
+    <button class="ptab" onclick="switchProcess('mano',this)">
+      의문인식과정<span class="ptab-sub">Manodvāra-vīthi</span>
+    </button>
+  </div>
+
+  <!-- ── 위: 찰나 흐름 ── -->
+  <div class="top">
+
+    <!-- ===== 오문인식과정 ===== -->
+    <div class="process-panel active" id="panel-panca">
+      <div class="section-title">오문인식과정 — 찰나를 탭하면 마음부수가 표시됩니다</div>
+      <div class="flow-wrap">
+
+        <div class="cgroup">
+          <div class="cgroup-label">잠재의식 (Bhavaṅga)</div>
+          <div class="moment-row">
+            <div class="moment type-bavanga" data-id="bav-past" onclick="select(this)">
+              <span class="moment-badge">전</span>
+              <div class="moment-ko">과거<br>바왕가</div>
+              <div class="moment-pali">Atīta-bh.</div>
+            </div>
+            <div class="moment type-bavanga" data-id="bav-vibrate" onclick="select(this)">
+              <span class="moment-badge">1</span>
+              <div class="moment-ko">바왕가<br>동요</div>
+              <div class="moment-pali">calana</div>
+            </div>
+            <div class="moment type-bavanga" data-id="bav-arrest" onclick="select(this)">
+              <span class="moment-badge">2</span>
+              <div class="moment-ko">바왕가<br>차단</div>
+              <div class="moment-pali">upaccheda</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="garrow">→</div>
+
+        <div class="cgroup">
+          <div class="cgroup-label">문 열기 · 받아들임</div>
+          <div class="moment-row">
+            <div class="moment type-gate" data-id="panca-dvara" onclick="select(this)">
+              <span class="moment-badge">3</span>
+              <div class="moment-ko">오문<br>전향</div>
+              <div class="moment-pali">Pañcadvāra</div>
+            </div>
+            <div class="moment type-recv" data-id="pancavinnana" onclick="select(this)">
+              <span class="moment-badge">4</span>
+              <div class="moment-ko">오식</div>
+              <div class="moment-pali">Pañcaviññāṇa</div>
+            </div>
+            <div class="moment type-recv" data-id="sampaticchana" onclick="select(this)">
+              <span class="moment-badge">5</span>
+              <div class="moment-ko">수취</div>
+              <div class="moment-pali">Sampaṭicchana</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="garrow">→</div>
+
+        <div class="cgroup">
+          <div class="cgroup-label">조사 · 결정</div>
+          <div class="moment-row">
+            <div class="moment type-recv" data-id="santirana" onclick="select(this)">
+              <span class="moment-badge">6</span>
+              <div class="moment-ko">조사</div>
+              <div class="moment-pali">Santīraṇa</div>
+            </div>
+            <div class="moment type-gate" data-id="manodvara" onclick="select(this)">
+              <span class="moment-badge">7</span>
+              <div class="moment-ko">의문<br>전향</div>
+              <div class="moment-pali">Manodvāra</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="garrow">→</div>
+
+        <div class="cgroup">
+          <div class="cgroup-label">속행 (Javana) × 7 — 업이 쌓이는 찰나</div>
+          <div class="moment-row">
+            <div class="moment type-java" data-id="java1" onclick="select(this)"><span class="moment-badge">8</span><div class="moment-ko">속행 1</div><div class="moment-pali">Javana 1</div></div>
+            <div class="moment type-java" data-id="java2" onclick="select(this)"><span class="moment-badge">9</span><div class="moment-ko">속행 2</div><div class="moment-pali">Javana 2</div></div>
+            <div class="moment type-java" data-id="java3" onclick="select(this)"><span class="moment-badge">10</span><div class="moment-ko">속행 3</div><div class="moment-pali">Javana 3</div></div>
+            <div class="moment type-java" data-id="java4" onclick="select(this)"><span class="moment-badge">11</span><div class="moment-ko">속행 4</div><div class="moment-pali">Javana 4</div></div>
+            <div class="moment type-java" data-id="java5" onclick="select(this)"><span class="moment-badge">12</span><div class="moment-ko">속행 5</div><div class="moment-pali">Javana 5</div></div>
+            <div class="moment type-java" data-id="java6" onclick="select(this)"><span class="moment-badge">13</span><div class="moment-ko">속행 6</div><div class="moment-pali">Javana 6</div></div>
+            <div class="moment type-java" data-id="java7" onclick="select(this)"><span class="moment-badge">14</span><div class="moment-ko">속행 7</div><div class="moment-pali">Javana 7</div></div>
+          </div>
+        </div>
+
+        <div class="garrow">→</div>
+
+        <div class="cgroup">
+          <div class="cgroup-label">등록 (Tadārammaṇa)</div>
+          <div class="moment-row">
+            <div class="moment type-tada" data-id="tada1" onclick="select(this)"><span class="moment-badge">15</span><div class="moment-ko">등록 1</div><div class="moment-pali">Tadā 1</div></div>
+            <div class="moment type-tada" data-id="tada2" onclick="select(this)"><span class="moment-badge">16</span><div class="moment-ko">등록 2</div><div class="moment-pali">Tadā 2</div></div>
+          </div>
+        </div>
+
+        <div class="garrow">→</div>
+
+        <div class="cgroup">
+          <div class="cgroup-label">복귀</div>
+          <div class="moment-row">
+            <div class="moment type-bavanga" data-id="bav-return" onclick="select(this)"><span class="moment-badge">17</span><div class="moment-ko">바왕가<br>복귀</div><div class="moment-pali">Bhavaṅga</div></div>
+          </div>
+        </div>
+
+      </div><!-- /flow-wrap -->
+    </div><!-- /panel-panca -->
+
+    <!-- ===== 의문인식과정 ===== -->
+    <div class="process-panel" id="panel-mano">
+      <div class="section-title">의문인식과정 — 찰나를 탭하면 마음부수가 표시됩니다</div>
+      <div class="flow-wrap">
+
+        <div class="cgroup">
+          <div class="cgroup-label">잠재의식 (Bhavaṅga)</div>
+          <div class="moment-row">
+            <div class="moment type-bavanga" data-id="bav-past" onclick="select(this)">
+              <span class="moment-badge">전</span>
+              <div class="moment-ko">과거<br>바왕가</div>
+              <div class="moment-pali">Atīta-bh.</div>
+            </div>
+            <div class="moment type-bavanga" data-id="bav-vibrate" onclick="select(this)">
+              <span class="moment-badge">1</span>
+              <div class="moment-ko">바왕가<br>동요</div>
+              <div class="moment-pali">calana</div>
+            </div>
+            <div class="moment type-bavanga" data-id="bav-arrest" onclick="select(this)">
+              <span class="moment-badge">2</span>
+              <div class="moment-ko">바왕가<br>차단</div>
+              <div class="moment-pali">upaccheda</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="garrow">→</div>
+
+        <div class="cgroup">
+          <div class="cgroup-label">결정</div>
+          <div class="moment-row">
+            <div class="moment type-gate" data-id="manodvara" onclick="select(this)">
+              <span class="moment-badge">3</span>
+              <div class="moment-ko">의문<br>전향</div>
+              <div class="moment-pali">Manodvāra</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="garrow">→</div>
+
+        <div class="cgroup">
+          <div class="cgroup-label">속행 (Javana) × 7 — 업이 쌓이는 찰나</div>
+          <div class="moment-row">
+            <div class="moment type-java" data-id="java1" onclick="select(this)"><span class="moment-badge">4</span><div class="moment-ko">속행 1</div><div class="moment-pali">Javana 1</div></div>
+            <div class="moment type-java" data-id="java2" onclick="select(this)"><span class="moment-badge">5</span><div class="moment-ko">속행 2</div><div class="moment-pali">Javana 2</div></div>
+            <div class="moment type-java" data-id="java3" onclick="select(this)"><span class="moment-badge">6</span><div class="moment-ko">속행 3</div><div class="moment-pali">Javana 3</div></div>
+            <div class="moment type-java" data-id="java4" onclick="select(this)"><span class="moment-badge">7</span><div class="moment-ko">속행 4</div><div class="moment-pali">Javana 4</div></div>
+            <div class="moment type-java" data-id="java5" onclick="select(this)"><span class="moment-badge">8</span><div class="moment-ko">속행 5</div><div class="moment-pali">Javana 5</div></div>
+            <div class="moment type-java" data-id="java6" onclick="select(this)"><span class="moment-badge">9</span><div class="moment-ko">속행 6</div><div class="moment-pali">Javana 6</div></div>
+            <div class="moment type-java" data-id="java7" onclick="select(this)"><span class="moment-badge">10</span><div class="moment-ko">속행 7</div><div class="moment-pali">Javana 7</div></div>
+          </div>
+        </div>
+
+        <div class="garrow">→</div>
+
+        <div class="cgroup">
+          <div class="cgroup-label">등록 (Tadārammaṇa)</div>
+          <div class="moment-row">
+            <div class="moment type-tada" data-id="tada1" onclick="select(this)"><span class="moment-badge">11</span><div class="moment-ko">등록 1</div><div class="moment-pali">Tadā 1</div></div>
+            <div class="moment type-tada" data-id="tada2" onclick="select(this)"><span class="moment-badge">12</span><div class="moment-ko">등록 2</div><div class="moment-pali">Tadā 2</div></div>
+          </div>
+        </div>
+
+        <div class="garrow">→</div>
+
+        <div class="cgroup">
+          <div class="cgroup-label">복귀</div>
+          <div class="moment-row">
+            <div class="moment type-bavanga" data-id="bav-return" onclick="select(this)"><span class="moment-badge">13</span><div class="moment-ko">바왕가<br>복귀</div><div class="moment-pali">Bhavaṅga</div></div>
+          </div>
+        </div>
+
+      </div><!-- /flow-wrap -->
+    </div><!-- /panel-mano -->
+
+    <!-- 범례 + 속행 유형 -->
+    <div class="bottom-bar">
+      <div class="legend">
+        <div class="legend-item"><div class="legend-dot" style="background:var(--grey)"></div>바왕가</div>
+        <div class="legend-item"><div class="legend-dot" style="background:var(--blue)"></div>전향심</div>
+        <div class="legend-item"><div class="legend-dot" style="background:var(--purple)"></div>수취·조사</div>
+        <div class="legend-item"><div class="legend-dot" style="background:var(--amber)"></div>속행</div>
+        <div class="legend-item"><div class="legend-dot" style="background:var(--teal)"></div>등록</div>
+      </div>
+      <span class="java-label">속행 유형:</span>
+      <button class="java-btn active" data-java="lobha1" onclick="setJavana(this)">탐욕(사견없음)</button>
+      <button class="java-btn" data-java="lobha2" onclick="setJavana(this)">탐욕(사견있음)</button>
+      <button class="java-btn" data-java="dosa" onclick="setJavana(this)">성냄</button>
+      <button class="java-btn" data-java="moha1" onclick="setJavana(this)">어리석음(들뜸)</button>
+      <button class="java-btn" data-java="moha2" onclick="setJavana(this)">어리석음(의심)</button>
+      <button class="java-btn" data-java="kusala1" onclick="setJavana(this)">선심(지혜없음)</button>
+      <button class="java-btn" data-java="kusala2" onclick="setJavana(this)">선심(지혜있음)</button>
+    </div>
+
+  </div><!-- /top -->
+
+  <!-- ── 아래: 마음부수 패널 ── -->
+  <div class="bottom" id="right-panel">
+    <div class="hint">
+      <div class="hint-icon">☸</div>
+      <div>위에서 인식과정을 선택하고<br>찰나를 탭하면<br>마음부수가 표시됩니다</div>
+    </div>
+  </div>
+
+</div><!-- /layout -->
+
+<style>
+.java-btn{
+  font-size:10px;padding:4px 10px;border-radius:99px;cursor:pointer;
+  background:var(--bg3);border:1px solid var(--border2);color:var(--text2);
+  font-family:'Noto Sans KR',sans-serif;transition:all 0.15s;flex-shrink:0;
+}
+.java-btn:hover{border-color:var(--amber);color:var(--amber);}
+.java-btn.active{background:var(--amber-bg);border-color:var(--amber);color:var(--amber);}
+</style>
+
+<script>
+// ────────────────────────────────────────────
+//  마음부수 전체 데이터
+// ────────────────────────────────────────────
+
+// 공통 마음부수 7 (sabbacitta-sādhāraṇa)
+const UNIVERSAL = [
+  {ko:"촉", pali:"Phassa"},
+  {ko:"느낌", pali:"Vedanā"},
+  {ko:"인식", pali:"Saññā"},
+  {ko:"의도", pali:"Cetanā"},
+  {ko:"집중", pali:"Ekaggatā"},
+  {ko:"생명기능", pali:"Jīvitindriya"},
+  {ko:"주의", pali:"Manasikāra"},
+];
+
+// 때때로 공통 (pakiṇṇaka) 6
+const PARTICULAR = [
+  {ko:"일으킨생각", pali:"Vitakka"},
+  {ko:"지속고찰", pali:"Vicāra"},
+  {ko:"결심", pali:"Adhimokkha"},
+  {ko:"정진", pali:"Vīriya"},
+  {ko:"희열", pali:"Pīti"},
+  {ko:"열의", pali:"Chanda"},
+];
+
+// ── 불선 반드시들 4 (akusala-sādhāraṇa) ──
+// 모든 불선심에 반드시 함께하는 4종
+const UNWHOLESOME_ALWAYS = [
+  {key:"moha",      ko:"어리석음",     pali:"Moha"},
+  {key:"ahirika",   ko:"부끄러움없음", pali:"Ahirika"},
+  {key:"anottappa", ko:"두려움없음",   pali:"Anottappa"},
+  {key:"uddhacca",  ko:"들뜸",         pali:"Uddhacca"},
+];
+
+// ── 불선 때때로들 10 (akusala-pakiṇṇaka) ──
+// 특정 불선심에만 함께하는 10종
+const UNWHOLESOME_OCC = {
+  lobha:     {ko:"탐욕",   pali:"Lobha",        subgroup:"탐욕군"},
+  ditthi:    {ko:"사견",   pali:"Diṭṭhi",       subgroup:"탐욕군"},
+  mana:      {ko:"자만",   pali:"Māna",         subgroup:"탐욕군"},
+  dosa:      {ko:"성냄",   pali:"Dosa",         subgroup:"성냄군"},
+  issa:      {ko:"시기",   pali:"Issā",         subgroup:"성냄군"},
+  macch:     {ko:"인색",   pali:"Macchariya",   subgroup:"성냄군"},
+  kukkucca:  {ko:"후회",   pali:"Kukkucca",     subgroup:"성냄군"},
+  thina:     {ko:"혼침",   pali:"Thīna",        subgroup:"혼침수면"},
+  middha:    {ko:"수면",   pali:"Middha",       subgroup:"혼침수면"},
+  vicikiccha:{ko:"의심",   pali:"Vicikicchā",   subgroup:"의심"},
+};
+
+// ── 선 반드시들 19 (sobhaṇa-sādhāraṇa) ──
+// 모든 선심에 반드시 함께하는 19종
+const WHOLESOME_ALWAYS = [
+  {key:"saddha",    ko:"믿음",         pali:"Saddhā"},
+  {key:"sati",      ko:"알아차림",     pali:"Sati"},
+  {key:"hiri",      ko:"부끄러움",     pali:"Hirī"},
+  {key:"ottappa",   ko:"두려움",       pali:"Ottappa"},
+  {key:"alobha",    ko:"탐욕없음",     pali:"Alobha"},
+  {key:"adosa",     ko:"성냄없음",     pali:"Adosa"},
+  {key:"tatram",    ko:"평정",         pali:"Tatramajjhattatā"},
+  {key:"kayapas",   ko:"몸경안",       pali:"Kāyapassaddhi"},
+  {key:"cittapas",  ko:"마음경안",     pali:"Cittapassaddhi"},
+  {key:"kayalahu",  ko:"몸가벼움",     pali:"Kāyalahutā"},
+  {key:"cittalahu", ko:"마음가벼움",   pali:"Cittalahutā"},
+  {key:"kayamudu",  ko:"몸부드러움",   pali:"Kāyamudutā"},
+  {key:"cittamudu", ko:"마음부드러움", pali:"Cittamudutā"},
+  {key:"kayakam",   ko:"몸적합",       pali:"Kāyakammaññatā"},
+  {key:"cittakam",  ko:"마음적합",     pali:"Cittakammaññatā"},
+  {key:"kayapag",   ko:"몸숙달",       pali:"Kāyapāguññatā"},
+  {key:"cittapag",  ko:"마음숙달",     pali:"Cittapāguññatā"},
+  {key:"kayauj",    ko:"몸곧음",       pali:"Kāyujukatā"},
+  {key:"cittauj",   ko:"마음곧음",     pali:"Cittujukatā"},
+];
+
+// ── 선 때때로들 6 (sobhaṇa-pakiṇṇaka) ──
+// 특정 선심에만 함께하는 6종
+const WHOLESOME_OCC = {
+  sammavaca: {ko:"바른말",      pali:"Sammāvācā",     subgroup:"절제"},
+  sammakam:  {ko:"바른행동",    pali:"Sammākammanta", subgroup:"절제"},
+  sammaaji:  {ko:"바른생계",    pali:"Sammāājīva",    subgroup:"절제"},
+  karuna:    {ko:"연민",        pali:"Karuṇā",        subgroup:"무량"},
+  mudita:    {ko:"같이기뻐함",  pali:"Muditā",        subgroup:"무량"},
+  panna:     {ko:"지혜",        pali:"Paññā",         subgroup:"지혜"},
+};
+
+// ────────────────────────────────────────────
+//  찰나별 마음부수 조합 정의
+//  particular: 때때로 공통 중 해당하는 것 (인덱스, 0=Vitakka..5=Chanda)
+//  unwholesome: UNWHOLESOME key 배열
+//  wholesome: WHOLESOME key 배열
+//  type: 'bavanga'|'gate'|'recv'|'java_lobha'|'java_dosa'|'java_kusala'|'tada'
+// ────────────────────────────────────────────
+
+// 속행 유형별 마음부수
+// unw_occ: 불선 때때로들 key[]
+// whol_always: 선 반드시들 표시 여부 (선심이면 true)
+// whol_occ: 선 때때로들 key[]
+const JAVANA_TYPES = {
+  lobha1: {
+    name:"탐욕심 (사견없음)", pali:"Lobha-mūla (diṭṭhigata-vippayutta)",
+    desc:"탐욕이 근본이며 사견이 없는 마음. 즐거움이나 쾌락을 추구할 때 일어납니다.",
+    kind:"unwholesome",
+    particular:[0,1,2,3,4,5],
+    unw_occ:["lobha"],
+    whol_always:false, whol_occ:[],
+  },
+  lobha2: {
+    name:"탐욕심 (사견있음)", pali:"Lobha-mūla (diṭṭhigata-sampayutta)",
+    desc:"탐욕과 함께 잘못된 견해(邪見)가 함께하는 마음.",
+    kind:"unwholesome",
+    particular:[0,1,2,3,4,5],
+    unw_occ:["lobha","ditthi"],
+    whol_always:false, whol_occ:[],
+  },
+  dosa: {
+    name:"성냄심 (Dosa-mūla)", pali:"Dosa-mūla citta",
+    desc:"성냄·혐오가 근본인 마음. 불쾌한 대상에 저항·반발할 때 일어납니다.",
+    kind:"unwholesome",
+    particular:[0,1,2,3,5], // 희열(Pīti) 없음
+    unw_occ:["dosa"],
+    whol_always:false, whol_occ:[],
+  },
+  moha1: {
+    name:"어리석음심 (들뜸)", pali:"Moha-mūla (uddhacca-sampayutta)",
+    desc:"들뜸(散亂)을 동반한 어리석음의 마음. 산만하고 방황하는 상태.",
+    kind:"unwholesome",
+    particular:[0,1,3],
+    unw_occ:[], // 불선공통 4종만
+    whol_always:false, whol_occ:[],
+  },
+  moha2: {
+    name:"어리석음심 (의심)", pali:"Moha-mūla (vicikicchā-sampayutta)",
+    desc:"의심(疑)를 동반한 어리석음의 마음. 부처·법·승에 대해 의심이 일어날 때.",
+    kind:"unwholesome",
+    particular:[0,1,3], // 결심(Adhimokkha) 없음 — 의심이 있으므로
+    unw_occ:["vicikiccha"],
+    whol_always:false, whol_occ:[],
+  },
+  kusala1: {
+    name:"선심 (지혜없음)", pali:"Kāmāvacara-kusala (ñāṇa-vippayutta)",
+    desc:"지혜(慧)는 없지만 선한 마음. 일반적인 선행·보시·지계 시 일어납니다.",
+    kind:"wholesome",
+    particular:[0,1,2,3,4,5],
+    unw_occ:[],
+    whol_always:true, whol_occ:[], // 선공통 19 + 때때로 없음
+  },
+  kusala2: {
+    name:"선심 (지혜있음)", pali:"Kāmāvacara-kusala (ñāṇa-sampayutta)",
+    desc:"지혜(正見)가 함께하는 선한 마음. 법을 알고 하는 선행, 위빠사나 수행.",
+    kind:"wholesome",
+    particular:[0,1,2,3,4,5],
+    unw_occ:[],
+    whol_always:true, whol_occ:["panna"],
+  },
+};
+
+// 현재 선택된 속행 유형
+let currentJavana = 'lobha1';
+
+// ────────────────────────────────────────────
+//  찰나별 마음부수 정의
+// ────────────────────────────────────────────
+const MOMENT_DATA = {
+  'bav-past': {
+    name:"과거 바왕가", pali:"Atīta-bhavaṅga",
+    desc:"인식과정이 시작되기 전 흘러가던 잠재의식 흐름. 아직 대상의 영향을 받지 않은 상태입니다.",
+    type:"bavanga", particular:[0,1,2,3,4,5],
+    unw_always:false, unw_occ:[], whol_always:false, whol_occ:[],
+    note:"무기(無記) — 결과심(vipāka). 재생연결심과 동일한 마음 종류입니다."
+  },
+  'bav-vibrate': {
+    name:"바왕가 동요", pali:"Bhavaṅga-calana",
+    desc:"외부 대상이 감각문을 자극하면서 바왕가 흐름이 흔들리기 시작합니다.",
+    type:"bavanga", particular:[0,1,2,3,4,5],
+    unw_always:false, unw_occ:[], whol_always:false, whol_occ:[],
+    note:"무기(無記) — 아직 인식과정에 진입하지 않은 상태."
+  },
+  'bav-arrest': {
+    name:"바왕가 차단", pali:"Bhavaṅgupaccheda",
+    desc:"바왕가 흐름이 완전히 끊기고 인식과정이 본격 시작됩니다.",
+    type:"bavanga", particular:[0,1,2,3,4,5],
+    unw_always:false, unw_occ:[], whol_always:false, whol_occ:[],
+    note:"무기(無記) — 이 찰나를 기점으로 오문전향심이 일어납니다."
+  },
+  'panca-dvara': {
+    name:"오문전향심", pali:"Pañcadvārāvajjana-citta",
+    desc:"다섯 감각문(眼·耳·鼻·舌·身) 중 어디서 대상이 왔는지 향하는 마음.",
+    type:"gate", particular:[0,1,2,3,5],
+    unw_always:false, unw_occ:[], whol_always:false, whol_occ:[],
+    note:"작용심(Kiriya) — 무기. 불선·선 마음부수 없음."
+  },
+  'pancavinnana': {
+    name:"오식 (五識)", pali:"Pañcaviññāṇa",
+    desc:"눈·귀·코·혀·몸 감각문에서 실제로 대상을 아는 마음. 가장 단순한 마음입니다.",
+    type:"recv", particular:[],
+    unw_always:false, unw_occ:[], whol_always:false, whol_occ:[],
+    note:"결과심(vipāka) — 공통 7종만 존재. 때때로 공통도 없는 가장 단순한 마음."
+  },
+  'sampaticchana': {
+    name:"수취심 (受取心)", pali:"Sampaṭicchana-citta",
+    desc:"오식이 받아들인 대상을 이어받아 확인하는 마음.",
+    type:"recv", particular:[0,1,3],
+    unw_always:false, unw_occ:[], whol_always:false, whol_occ:[],
+    note:"결과심(vipāka) — 무기."
+  },
+  'santirana': {
+    name:"조사심 (調査心)", pali:"Santīraṇa-citta",
+    desc:"대상을 조사·탐구하는 마음. 호불호를 판단하기 전 단계입니다.",
+    type:"recv", particular:[0,1,3,5],
+    unw_always:false, unw_occ:[], whol_always:false, whol_occ:[],
+    note:"결과심(vipāka) — 무기."
+  },
+  'manodvara': {
+    name:"의문전향심 (意門轉向心)", pali:"Manodvārāvajjana-citta",
+    desc:"조사심 이후 대상을 결정·분류하는 마음. 속행의 성격을 결정짓는 중요한 찰나입니다.",
+    type:"gate", particular:[0,1,2,3,5],
+    unw_always:false, unw_occ:[], whol_always:false, whol_occ:[],
+    note:"작용심(Kiriya) — 무기."
+  },
+  'java1':{name:"속행 1", type:"java", javaNum:1},
+  'java2':{name:"속행 2", type:"java", javaNum:2},
+  'java3':{name:"속행 3", type:"java", javaNum:3},
+  'java4':{name:"속행 4", type:"java", javaNum:4},
+  'java5':{name:"속행 5", type:"java", javaNum:5},
+  'java6':{name:"속행 6", type:"java", javaNum:6},
+  'java7':{name:"속행 7", type:"java", javaNum:7},
+  'tada1': {
+    name:"등록심 1 (Tadārammaṇa)", pali:"Tadārammaṇa-citta 1",
+    desc:"속행이 끝난 뒤 강한 대상이 남아있을 때 일어나는 마음. 속행의 대상을 다시 등록합니다.",
+    type:"tada", particular:[0,1,2,3,4,5],
+    unw_always:false, unw_occ:[], whol_always:false, whol_occ:[],
+    note:"결과심(vipāka) — 약한 대상이면 일어나지 않고 바왕가로 바로 복귀."
+  },
+  'tada2': {
+    name:"등록심 2 (Tadārammaṇa)", pali:"Tadārammaṇa-citta 2",
+    desc:"등록심 1에 이어 두 번째 등록. 이후 바왕가로 복귀합니다.",
+    type:"tada", particular:[0,1,2,3,4,5],
+    unw_always:false, unw_occ:[], whol_always:false, whol_occ:[],
+    note:"등록심은 최대 2찰나."
+  },
+  'bav-return': {
+    name:"바왕가 복귀", pali:"Bhavaṅga (복귀)",
+    desc:"인식과정이 완료되고 다시 잠재의식 흐름으로 돌아갑니다.",
+    type:"bavanga", particular:[0,1,2,3,4,5],
+    unw_always:false, unw_occ:[], whol_always:false, whol_occ:[],
+    note:"한 인식과정 완료."
+  },
+};
+
+// ────────────────────────────────────────────
+//  렌더링
+// ────────────────────────────────────────────
+
+let currentId = null;
+
+// 인식과정 탭 전환
+function switchProcess(type, btn){
+  // 탭 버튼 활성
+  document.querySelectorAll('.ptab').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  // 패널 전환
+  document.querySelectorAll('.process-panel').forEach(p=>p.classList.remove('active'));
+  document.getElementById('panel-'+type).classList.add('active');
+  // 찰나 선택 초기화
+  document.querySelectorAll('.moment').forEach(m=>m.classList.remove('active'));
+  currentId = null;
+  document.getElementById('right-panel').innerHTML = `
+    <div class="hint">
+      <div class="hint-icon">☸</div>
+      <div>찰나를 탭하면<br>마음부수가 표시됩니다</div>
+    </div>`;
+}
+
+function select(el){
+  document.querySelectorAll('.moment').forEach(m=>m.classList.remove('active'));
+  el.classList.add('active');
+  currentId = el.dataset.id;
+  renderPanel(currentId);
+}
+
+function setJavana(btn){
+  document.querySelectorAll('.java-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  currentJavana = btn.dataset.java;
+  if(currentId && currentId.startsWith('java')) renderPanel(currentId);
+}
+
+function makeTags(arr, cls){
+  return arr.map(c=>`<span class="ceta-tag ${cls}">${c.ko}<span class="pali"> ${c.pali}</span></span>`).join('');
+}
+
+function renderPanel(id){
+  let d = MOMENT_DATA[id];
+  if(!d) return;
+
+  // 속행이면 JAVANA_TYPES에서 데이터 병합
+  if(d.type === 'java'){
+    const jt = JAVANA_TYPES[currentJavana];
+    d = {
+      name:`${d.name} — ${jt.name}`, pali:jt.pali, desc:jt.desc,
+      type:'java', javaNum:d.javaNum,
+      particular:jt.particular,
+      unw_always: jt.kind==='unwholesome',
+      unw_occ:    jt.unw_occ,
+      whol_always:jt.whol_always,
+      whol_occ:   jt.whol_occ,
+      note:"속행은 7찰나 모두 동일한 마음 종류가 반복됩니다. 업(Kamma)이 쌓이는 핵심 찰나.",
+    };
+  }
+
+  const colorMap = {bavanga:'var(--grey)',gate:'var(--blue)',recv:'var(--purple)',java:'var(--amber)',tada:'var(--teal)'};
+  const hc = colorMap[d.type]||'var(--accent)';
+  const partActive = d.particular||[];
+
+  // ── 섹션별 태그 생성 ──
+
+  // 1. 반드시 공통 7 (모든 마음)
+  const univTags = makeTags(UNIVERSAL, 'c-universal');
+
+  // 2. 때때로 공통 6 (활성/비활성 구분)
+  const partTags = PARTICULAR.map((c,i)=>{
+    const on = partActive.includes(i);
+    return `<span class="ceta-tag c-particular${on?'':' c-inactive'}">${c.ko}<span class="pali"> ${c.pali}</span></span>`;
+  }).join('');
+
+  // 속행 찰나인지 여부 — 속행이면 4섹션 항상 모두 표시
+  const isJavana = (d.type === 'java');
+
+  // 3. 불선 반드시들
+  // - 속행: 항상 표시 (불선심이면 활성, 선심이면 전부 비활성)
+  // - 비속행: 불선심일 때만 표시
+  const showUnw = isJavana || d.unw_always || d.unw_occ.length > 0;
+  const unwAlwaysTags = UNWHOLESOME_ALWAYS.map(c => {
+    const on = d.unw_always;
+    return `<span class="ceta-tag c-unw-always${on?'':' c-inactive'}">${c.ko}<span class="pali"> ${c.pali}</span></span>`;
+  }).join('');
+
+  // 4. 불선 때때로들
+  // - 속행: 항상 10종 모두 표시, 해당 key만 활성
+  // - 비속행: 불선심일 때만 표시
+  const unwOccTags = (showUnw)
+    ? Object.entries(UNWHOLESOME_OCC).map(([k,c])=>{
+        const on = d.unw_occ.includes(k);
+        return `<span class="ceta-tag c-unw-occ${on?'':' c-inactive'}">${c.ko}<span class="pali"> ${c.pali}</span><span class="subg">${c.subgroup}</span></span>`;
+      }).join('')
+    : '';
+
+  // 5. 선 반드시들
+  // - 속행: 항상 표시 (선심이면 활성, 불선심이면 전부 비활성)
+  // - 비속행: 선심일 때만 표시
+  const showWhol = isJavana || d.whol_always || d.whol_occ.length > 0;
+  const wholAlwaysTags = WHOLESOME_ALWAYS.map(c => {
+    const on = d.whol_always;
+    return `<span class="ceta-tag c-whol-always${on?'':' c-inactive'}">${c.ko}<span class="pali"> ${c.pali}</span></span>`;
+  }).join('');
+
+  // 6. 선 때때로들
+  // - 속행: 항상 6종 모두 표시, 해당 key만 활성
+  // - 비속행: 선심일 때만 표시
+  const wholOccTags = (showWhol)
+    ? Object.entries(WHOLESOME_OCC).map(([k,c])=>{
+        const on = d.whol_occ.includes(k);
+        return `<span class="ceta-tag c-whol-occ${on?'':' c-inactive'}">${c.ko}<span class="pali"> ${c.pali}</span><span class="subg">${c.subgroup}</span></span>`;
+      }).join('')
+    : '';
+
+  // 활성 개수 (총계)
+  const activeUnwAlways = d.unw_always ? UNWHOLESOME_ALWAYS.length : 0;
+  const activeWholAlways = d.whol_always ? WHOLESOME_ALWAYS.length : 0;
+  const total = 7
+    + partActive.length
+    + activeUnwAlways
+    + d.unw_occ.length
+    + activeWholAlways
+    + d.whol_occ.length;
+
+  const isNeutral = !isJavana && !d.unw_always && d.unw_occ.length===0 && !d.whol_always && d.whol_occ.length===0;
+
+  document.getElementById('right-panel').innerHTML = `
+    <div class="panel-header" style="border-left:3px solid ${hc};">
+      <div class="panel-moment-name">${d.name}</div>
+      <div class="panel-moment-pali">${d.pali||''}</div>
+      <div class="panel-moment-desc">${d.desc||''}</div>
+    </div>
+    <div class="panel-body">
+
+      <div class="total-row">
+        <span class="total-label">함께하는 마음부수</span>
+        <span class="total-num" style="color:${hc};">${total}종</span>
+        ${d.note?`<span class="note-badge">${d.note}</span>`:''}
+      </div>
+
+      <div class="ceta-4grid">
+
+        <!-- ① 반드시 공통 7 -->
+        <div class="ceta-section span2">
+          <div class="ceta-section-head">
+            <div class="sec-dot" style="background:#9aa8be;"></div>
+            <span class="sec-title">반드시 공통<em>Sabbacitta-sādhāraṇa</em></span>
+            <span class="sec-count">7종 항상</span>
+          </div>
+          <div class="ceta-grid">${univTags}</div>
+        </div>
+
+        <!-- ② 때때로 공통 6 -->
+        <div class="ceta-section span2">
+          <div class="ceta-section-head">
+            <div class="sec-dot" style="background:#ce93d8;"></div>
+            <span class="sec-title">때때로 공통<em>Pakiṇṇaka</em></span>
+            <span class="sec-count">${partActive.length}/6종</span>
+          </div>
+          <div class="ceta-grid">${partTags}</div>
+        </div>
+
+        ${showUnw ? `
+        <!-- ③ 불선 반드시들 -->
+        <div class="ceta-section">
+          <div class="ceta-section-head">
+            <div class="sec-dot" style="background:#f48fb1;"></div>
+            <span class="sec-title">불선 반드시들<em>Akusala-sādhāraṇa</em></span>
+            <span class="sec-count">${activeUnwAlways}/${UNWHOLESOME_ALWAYS.length}</span>
+          </div>
+          <div class="ceta-grid">${unwAlwaysTags}</div>
+        </div>
+
+        <!-- ④ 불선 때때로들 -->
+        <div class="ceta-section">
+          <div class="ceta-section-head">
+            <div class="sec-dot" style="background:#e07090;"></div>
+            <span class="sec-title">불선 때때로들<em>Akusala-pakiṇṇaka</em></span>
+            <span class="sec-count">${d.unw_occ.length}/${Object.keys(UNWHOLESOME_OCC).length}</span>
+          </div>
+          <div class="ceta-grid">${unwOccTags}</div>
+        </div>` : ''}
+
+        ${showWhol ? `
+        <!-- ⑤ 선 반드시들 -->
+        <div class="ceta-section">
+          <div class="ceta-section-head">
+            <div class="sec-dot" style="background:#81c784;"></div>
+            <span class="sec-title">선 반드시들<em>Sobhaṇa-sādhāraṇa</em></span>
+            <span class="sec-count">${activeWholAlways}/${WHOLESOME_ALWAYS.length}</span>
+          </div>
+          <div class="ceta-grid">${wholAlwaysTags}</div>
+        </div>
+
+        <!-- ⑥ 선 때때로들 -->
+        <div class="ceta-section">
+          <div class="ceta-section-head">
+            <div class="sec-dot" style="background:#a5d6a7;"></div>
+            <span class="sec-title">선 때때로들<em>Sobhaṇa-pakiṇṇaka</em></span>
+            <span class="sec-count">${d.whol_occ.length}/${Object.keys(WHOLESOME_OCC).length}</span>
+          </div>
+          <div class="ceta-grid">${wholOccTags}</div>
+        </div>` : ''}
+
+        ${isNeutral ? `
+        <div class="neutral-note">불선·선 마음부수 없음 — 무기(無記, Abyākata)의 마음입니다.</div>` : ''}
+
+      </div><!-- /ceta-4grid -->
+    </div>
+  `;
+}
+</script>
+</body>
+</html>
