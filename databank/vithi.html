@@ -8,30 +8,34 @@
 <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@400;500;600&family=Noto+Sans+KR:wght@300;400;500&display=swap" rel="stylesheet">
 <style>
 :root{
-  --bg:#0d0f18;--bg2:#131624;--bg3:#1a1e30;--bg4:#20253c;
-  --border:rgba(255,255,255,0.07);--border2:rgba(255,255,255,0.13);
-  --text:#dde1ee;--text2:#8890aa;--text3:#4a5068;
-  --accent:#7c6af5;--accent2:#5b4fd4;
-  --gold:#e2b866;--gold-bg:rgba(226,184,102,0.1);
-  --teal:#4ecdc4;--teal-bg:rgba(78,205,196,0.1);
-  --rose:#f06292;--rose-bg:rgba(240,98,146,0.1);
-  --green:#66bb6a;--green-bg:rgba(102,187,106,0.1);
-  --blue:#5ba8f5;--blue-bg:rgba(91,168,245,0.1);
-  --amber:#ffb74d;--amber-bg:rgba(255,183,77,0.1);
-  --purple:#ce93d8;--purple-bg:rgba(206,147,216,0.1);
-  --grey:#78909c;--grey-bg:rgba(120,144,156,0.1);
+  --bg:#f8f7f4;--bg2:#ffffff;--bg3:#f1efe9;--bg4:#e8e6df;
+  --border:#e4e2db;--border2:#c8c5bc;
+  --text:#1a1a1a;--text2:#555050;--text3:#9e9990;
+  --accent:#6b46c1;--accent2:#553898;
+  --gold:#b45309;--gold-bg:#fef3e2;
+  --teal:#0f766e;--teal-bg:#f0fdfa;
+  --rose:#be185d;--rose-bg:#fdf2f8;
+  --green:#2e7d52;--green-bg:#edf7f1;
+  --blue:#1a6faa;--blue-bg:#e8f3fb;
+  --amber:#b45309;--amber-bg:#fef3e2;
+  --purple:#7c3aed;--purple-bg:#ede9fe;
+  --grey:#6b7280;--grey-bg:#f3f4f6;
 }
 *{box-sizing:border-box;margin:0;padding:0;}
 body{background:var(--bg);color:var(--text);font-family:'Noto Sans KR',sans-serif;min-height:100vh;font-size:14px;}
 
 /* ── 상단 바 ── */
-.topbar{display:flex;align-items:center;gap:10px;padding:12px 24px;border-bottom:1px solid var(--border);background:var(--bg2);position:sticky;top:0;z-index:200;}
-.logo{font-size:13px;font-weight:500;color:var(--text);display:flex;align-items:center;gap:7px;text-decoration:none;}
-.logo-dot{width:7px;height:7px;border-radius:50%;background:var(--accent);}
-.topbar-title{font-size:12px;color:var(--text3);margin-left:4px;}
+.topbar{position:sticky;top:0;z-index:200;background:var(--bg2);border-bottom:1px solid var(--border);}
+.topbar-logo{display:flex;align-items:center;gap:8px;padding:11px 24px 0;font-size:13px;font-weight:500;color:var(--text);text-decoration:none;}
+.logo-dot{width:8px;height:8px;border-radius:50%;background:var(--accent);flex-shrink:0;}
+.main-nav{display:flex;overflow-x:auto;padding:0 16px;}
+.main-nav::-webkit-scrollbar{height:0;}
+.nav-item{flex-shrink:0;padding:9px 12px 8px;font-size:12px;font-weight:500;color:var(--text3);text-decoration:none;border-bottom:2px solid transparent;transition:all 0.15s;white-space:nowrap;cursor:pointer;background:none;border-top:none;border-left:none;border-right:none;font-family:'Noto Sans KR',sans-serif;}
+.nav-item:hover{color:var(--text2);}
+.nav-item.on{color:var(--accent);border-bottom:2px solid var(--accent);}
 
 /* ── 레이아웃: 상하 구조 ── */
-.layout{display:flex;flex-direction:column;height:calc(100vh - 49px);}
+.layout{display:flex;flex-direction:column;height:calc(100vh - 72px);}
 
 /* ── 인식과정 탭 ── */
 .process-tabs{
@@ -99,7 +103,7 @@ body{background:var(--bg);color:var(--text);font-family:'Noto Sans KR',sans-seri
 }
 .moment:hover{border-color:var(--border2);background:var(--bg4);}
 .moment.active{
-  border-color:var(--accent);background:rgba(124,106,245,0.14);
+  border-color:var(--accent);background:var(--purple-bg);
   box-shadow:0 0 0 1px var(--accent);
 }
 .moment-ko{font-size:10px;font-weight:500;color:var(--text);text-align:center;line-height:1.4;margin-bottom:2px;}
@@ -190,19 +194,19 @@ body{background:var(--bg);color:var(--text);font-family:'Noto Sans KR',sans-seri
 .ceta-tag .subg{font-size:8px;opacity:0.4;margin-left:3px;padding-left:3px;border-left:1px solid currentColor;}
 
 /* ── 6가지 색상 클래스 ── */
-.c-universal{background:rgba(200,210,230,0.07);border-color:rgba(200,210,230,0.15);color:#9aa8be;}
-.c-particular{background:rgba(206,147,216,0.13);border-color:rgba(206,147,216,0.3);color:#ce93d8;}
+.c-universal{background:#f3f4f6;border-color:#d1d5db;color:#6b7280;}
+.c-particular{background:#ede9fe;border-color:#c4b5fd;color:#7c3aed;}
 /* 불선 반드시들 — 진한 빨강 */
-.c-unw-always{background:rgba(240,98,146,0.18);border-color:rgba(240,98,146,0.45);color:#f48fb1;}
+.c-unw-always{background:#fdf2f8;border-color:#f9a8d4;color:#9d174d;}
 /* 불선 때때로들 — 연한 빨강 */
-.c-unw-occ{background:rgba(240,98,146,0.08);border-color:rgba(240,98,146,0.22);color:#e07090;}
+.c-unw-occ{background:#fef9fc;border-color:#fce7f3;color:#be185d;}
 /* 선 반드시들 — 확실한 초록 */
-.c-whol-always{background:rgba(100,200,100,0.18);border-color:rgba(100,200,100,0.5);color:#81c784;}
+.c-whol-always{background:#edf7f1;border-color:#6ee7b7;color:#166534;}
 /* 선 때때로들 — 연한 초록 */
-.c-whol-occ{background:rgba(100,200,100,0.08);border-color:rgba(100,200,100,0.25);color:#a5d6a7;}
+.c-whol-occ{background:#f0fdf4;border-color:#bbf7d0;color:#2e7d52;}
 
-/* 비활성 */
-.c-inactive{opacity:0.15;filter:grayscale(1);}
+/* 비활성 — 색상 덮어쓰기로 회색 고정 */
+.c-inactive{background:#f3f4f6 !important;border-color:#d1d5db !important;color:#6b7280 !important;}
 
 /* 무기 안내 */
 .neutral-note{
@@ -230,8 +234,15 @@ body{background:var(--bg);color:var(--text);font-family:'Noto Sans KR',sans-seri
 <body>
 
 <div class="topbar">
-  <a class="logo" href="index.html"><span class="logo-dot"></span>아비담마</a>
-  <span class="topbar-title">/ 17심찰나 인식과정</span>
+  <a class="topbar-logo" href="index.html"><div class="logo-dot"></div>아비담마 교육 프로그램</a>
+  <div class="main-nav">
+    <a class="nav-item" href="index.html">홈</a>
+    <a class="nav-item" href="intro.html">입문</a>
+    <a class="nav-item" href="core-concepts.html">핵심개념</a>
+    <button class="nav-item on">인식과정</button>
+    <a class="nav-item" href="life-rebirth.html">삶과재생</a>
+    <a class="nav-item" href="advanced.html">심화·응용</a>
+  </div>
 </div>
 
 <div class="layout">
