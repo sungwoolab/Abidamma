@@ -149,6 +149,10 @@
     .quiz-result.show{display:block;}
     .quiz-result.ok{background:var(--green-bg);color:var(--green);}
     .quiz-result.fail{background:var(--red-bg);color:var(--red);}
+    .quiz-hint-btn{margin-top:8px;padding:5px 12px;border-radius:7px;border:1px solid var(--border);background:transparent;font-size:11px;color:var(--text3);cursor:pointer;font-family:'Noto Sans KR',sans-serif;transition:all 0.15s;}
+    .quiz-hint-btn:hover{border-color:var(--accent);color:var(--accent);}
+    .quiz-next-btn{padding:9px 22px;border-radius:99px;background:var(--accent);color:#fff;font-size:13px;font-weight:500;border:none;cursor:pointer;font-family:'Noto Sans KR',sans-serif;transition:all 0.15s;}
+    .quiz-next-btn:hover{opacity:0.88;}
 
     /* 완료 배너 */
     .done-banner{display:none;background:var(--green-bg);border:1px solid var(--green);border-radius:12px;padding:20px;text-align:center;margin-top:14px;}
@@ -177,7 +181,7 @@
     <a class="main-nav-item" href="index.html">홈</a>
     <button class="main-nav-item on" onclick="void(0)">입문</button>
     <a class="main-nav-item" href="core-concepts.html">핵심개념</a>
-    <a class="main-nav-item" href="abhidhamma_vithi.html">인식과정</a>
+    <a class="main-nav-item" href="vithi.html">인식과정</a>
     <button class="main-nav-item" onclick="void(0)">삶과재생</button>
     <button class="main-nav-item" onclick="void(0)">심화·응용</button>
   </div>
@@ -418,8 +422,12 @@ function makeQuiz(areaId, bannerId, quizzes) {
     document.getElementById(areaId).innerHTML = `
       <div class="quiz-num">문제 ${idx+1} / ${quizzes.length}</div>
       <div class="quiz-q">${q.q}</div>
-      <div class="quiz-opts">${q.opts.map((o,i)=>`<button class="quiz-opt" onclick="${fnName}(${i})">${o}</button>`).join('')}</div>
-      <div class="quiz-result" id="qr_${areaId}"></div>`;
+      <div class="quiz-opts">${q.opts.map((o,i)=>`<button class="quiz-opt" onclick="window['${fnName}'](${i})">${o}</button>`).join('')}</div>
+      <button class="quiz-hint-btn" onclick="window['peek_${areaId}']()">정답 보기</button>
+      <div class="quiz-result" id="qr_${areaId}"></div>
+      <div id="qn_${areaId}" style="display:none;margin-top:12px;text-align:right;">
+        <button class="quiz-next-btn" onclick="window['next_${areaId}']()">${idx+1 < quizzes.length ? '다음 문제 →' : '완료 ✓'}</button>
+      </div>`;
     window[fnName] = function(i) {
       const opts = document.querySelectorAll(`#${areaId} .quiz-opt`);
       opts.forEach(o => o.disabled = true);
@@ -429,22 +437,48 @@ function makeQuiz(areaId, bannerId, quizzes) {
       res.innerHTML = i===q.ans
         ? '✓ 정답입니다! ' + q.explain
         : '✗ 정답은 <strong>"'+q.opts[q.ans]+'"</strong>입니다. '+q.explain;
-      setTimeout(() => { idx++; render(); }, 2000);
+      document.getElementById('qn_'+areaId).style.display = 'block';
     };
+    window['peek_'+areaId] = function() {
+      const opts = document.querySelectorAll(`#${areaId} .quiz-opt`);
+      opts.forEach(o => o.disabled = true);
+      opts[q.ans].classList.add('correct');
+      const hb = document.querySelector(`#${areaId} .quiz-hint-btn`);
+      if (hb) hb.style.display = 'none';
+      const res = document.getElementById('qr_'+areaId);
+      res.className = 'quiz-result show ok';
+      res.innerHTML = '정답: <strong>"'+q.opts[q.ans]+'"</strong>. '+q.explain;
+      document.getElementById('qn_'+areaId).style.display = 'block';
+    };
+    window['next_'+areaId] = function() { idx++; render(); };
   }
   render();
 }
 
 makeQuiz('quiz1-area','done1-banner',[
   { q:"아비담마(Abhidhamma)의 뜻으로 올바른 것은?", opts:["붓다의 전기","수승한 법","승가의 계율","명상 안내서"], ans:1, explain:"Abhi(수승한)+Dhamma(법)=수승한 법. 존재의 궁극적 실재를 정밀하게 분석한 체계입니다." },
-  { q:"아비담마는 삼장 중 어디에 속하나요?", opts:["율장(Vinaya)","경장(Sutta)","논장(Abhidhamma)","별도 경전"], ans:2, explain:"아비담마는 삼장 중 논장(Abhidhamma Piṭaka)에 속하며 7개의 논서로 구성됩니다." },
+  { q:"아비담마는 삼장 중 어디에 속하나요?", opts:["율장(Vinaya)","경장(Sutta)","논장(Abhidhamma Piṭaka)","별도 경전"], ans:2, explain:"아비담마는 삼장 중 논장(Abhidhamma Piṭaka)에 속하며 7개의 논서로 구성됩니다." },
   { q:"24조건 관계를 다루는 아비담마의 마지막 논서는?", opts:["법집론","분별론","논사론","발취론(Paṭṭhāna)"], ans:3, explain:"발취론(Paṭṭhāna)은 24가지 조건 관계를 다루며 아비담마의 정점으로 불립니다." },
+  { q:"아비담마 피따까(논장)는 모두 몇 개의 논서로 구성되나요?", opts:["5개","7개","9개","12개"], ans:1, explain:"논장(Abhidhamma Piṭaka)은 법집론·분별론·계론·인시설론·논사론·쌍론·발취론 총 7개 논서로 구성됩니다." },
+  { q:"아비담마 7론 중 첫 번째 논서는?", opts:["발취론(Paṭṭhāna)","법집론(Dhammasaṅgaṇī)","분별론","인시설론"], ans:1, explain:"법집론(Dhammasaṅgaṇī)은 7론 중 첫 번째로, 법(dhamma)을 목록화하고 분류한 논서입니다." },
+  { q:"빠알리 아비담마 전통을 오랫동안 보존해온 나라들은?", opts:["인도·중국","티베트·일본","미얀마·스리랑카·태국","한국·베트남"], ans:2, explain:"미얀마·스리랑카·태국은 상좌부(Theravāda) 전통을 계승하여 빠알리 아비담마를 보존해왔습니다." },
+  { q:"아비담마 주석서 '아비담마타상가하(Abhidhammatthasaṅgaha)'의 저자는?", opts:["붓다고사(Buddhaghosa)","아누룻다(Anuruddha)","사리뿟따","우빠띳사"], ans:1, explain:"아누룻다(Anuruddha)가 11~12세기 스리랑카에서 아비담마의 핵심을 요약한 아비담마타상가하를 저술했습니다." },
+  { q:"아비담마의 궁극적 목적은?", opts:["불교 역사 이해","심리학적 연구","번뇌를 소멸하여 열반 성취","사원 의례 이행"], ans:2, explain:"아비담마의 궁극적 목적은 존재의 실상을 통찰하여 탐·진·치를 소멸하고 열반을 성취하는 것입니다." },
+  { q:"아비담마 7론 중 가장 방대한 분량을 차지하는 논서는?", opts:["법집론","쌍론(Yamaka)","발취론(Paṭṭhāna)","분별론"], ans:2, explain:"발취론(Paṭṭhāna)은 24조건 관계를 다루며 아비담마 7론 중 가장 분량이 방대한 논서입니다." },
+  { q:"아비담마가 분석하는 '궁극적 실재(Paramattha)'의 특징은?", opts:["이름과 관념으로만 존재한다","자체적인 고유 특성(sabhāva)을 가지고 실제로 존재한다","사람과 사물처럼 복합적으로 존재한다","시간과 장소에 따라 달라진다"], ans:1, explain:"궁극적 실재(Paramattha-dhamma)는 분석해도 더 이상 나눌 수 없는 자체 특성(sabhāva)을 가진 법입니다." },
 ]);
 
 makeQuiz('quiz2-area','done2-banner',[
   { q:"4법(궁극적 실재)에 해당하지 않는 것은?", opts:["마음(Citta)","마음부수(Cetasika)","사람(Puggala)","열반(Nibbāna)"], ans:2, explain:"'사람'은 개념(paññatti)일 뿐 궁극적 실재가 아닙니다. 4법은 마음·마음부수·물질·열반입니다." },
   { q:"마음부수(Cetasika)는 모두 몇 종인가요?", opts:["28종","52종","89종","121종"], ans:1, explain:"마음부수는 52종입니다. 물질 28종, 마음 89/121종과 구분하세요." },
   { q:"4법 중 조건 지어지지 않은 무위법(無爲法)은?", opts:["마음(Citta)","마음부수(Cetasika)","물질(Rūpa)","열반(Nibbāna)"], ans:3, explain:"열반만이 무위법입니다. 마음·마음부수·물질은 조건에 의해 생멸하는 유위법입니다." },
+  { q:"아비담마에서 마음(Citta)은 기본 분류로 몇 종인가요?", opts:["54종","72종","89종","108종"], ans:2, explain:"마음은 기본 89종(욕계 54 + 색계 15 + 무색계 12 + 출세간 8)으로 분류됩니다." },
+  { q:"물질(Rūpa)은 아비담마에서 몇 종으로 분류되나요?", opts:["18종","24종","28종","36종"], ans:2, explain:"물질은 4대 원소 4종 + 파생 물질 24종 = 총 28종으로 분류됩니다." },
+  { q:"4법 중 마음(Citta)의 핵심 기능은?", opts:["느끼는 것","의도하는 것","대상을 아는 것(인식)","집중하는 것"], ans:2, explain:"마음(Citta)의 본질적 기능은 대상을 인식하는 것(vijānāti — '알다')입니다. 느낌·의도·집중은 마음부수의 기능입니다." },
+  { q:"마음과 마음부수가 항상 동일한 찰나에 일어나는 원리는?", opts:["공동생기(共同生起, sahajāta)","무상(無常, anicca)","연기(緣起, paṭicca-samuppāda)","공(空, suññatā)"], ans:0, explain:"마음과 마음부수는 항상 동일 찰나, 동일 대상, 동일 토대에서 함께 일어납니다(공동생기)." },
+  { q:"4가지 궁극적 실재 중 물질(Rūpa)에 속하지 않는 것은?", opts:["땅의 원소(地大)","바람의 원소(風大)","느낌(Vedanā)","소리(聲)"], ans:2, explain:"느낌(Vedanā)은 물질이 아니라 마음부수(Cetasika)입니다. 물질은 4대 원소와 24가지 파생 물질로 구성됩니다." },
+  { q:"아비담마에서 '개념(paññatti)'이 궁극적 실재가 아닌 이유는?", opts:["크기가 너무 작아서","자체 고유 특성이 없는 이름·관념이기 때문","붓다가 가르치지 않아서","물질이 아니기 때문"], ans:1, explain:"개념(paññatti)은 관념·이름으로만 존재하며 자체 특성(sabhāva)이 없어 궁극적 실재가 아닙니다." },
+  { q:"4법을 '유위(有爲)'와 '무위(無爲)'로 나눌 때 올바른 것은?", opts:["마음만 유위","마음·마음부수·물질은 유위, 열반은 무위","열반·마음은 무위, 나머지는 유위","모두 유위"], ans:1, explain:"마음·마음부수·물질은 조건에 의해 생멸하는 유위법(saṅkhata)이고, 열반만이 조건 지어지지 않은 무위법(asaṅkhata)입니다." },
 ]);
 </script>
 </body>

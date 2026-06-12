@@ -81,6 +81,10 @@
     .quiz-result.show{display:block;}
     .quiz-result.ok{background:var(--green-bg);color:var(--green);}
     .quiz-result.fail{background:var(--red-bg);color:var(--red);}
+    .quiz-hint-btn{margin-top:8px;padding:5px 12px;border-radius:7px;border:1px solid var(--border);background:transparent;font-size:11px;color:var(--text3);cursor:pointer;font-family:'Noto Sans KR',sans-serif;transition:all 0.15s;}
+    .quiz-hint-btn:hover{border-color:var(--accent);color:var(--accent);}
+    .quiz-next-btn{padding:9px 22px;border-radius:99px;background:var(--accent);color:#fff;font-size:13px;font-weight:500;border:none;cursor:pointer;font-family:'Noto Sans KR',sans-serif;transition:all 0.15s;}
+    .quiz-next-btn:hover{opacity:0.88;}
     .done-banner{display:none;background:var(--green-bg);border:1px solid var(--green);border-radius:12px;padding:20px;text-align:center;margin-top:14px;}
     .done-banner.show{display:block;}
     .done-title{font-size:15px;font-weight:500;color:var(--green);margin-bottom:5px;}
@@ -330,28 +334,63 @@ function makeQuiz(areaId,bannerId,quizzes){
   function render(){
     if(idx>=quizzes.length){document.getElementById(areaId).innerHTML='<p style="font-size:14px;color:var(--green);font-weight:500;text-align:center;padding:14px 0;">🎉 퀴즈 완료!</p>';document.getElementById(bannerId).classList.add('show');return;}
     const q=quizzes[idx];
-    document.getElementById(areaId).innerHTML=`<div class="quiz-num">문제 ${idx+1} / ${quizzes.length}</div><div class="quiz-q">${q.q}</div><div class="quiz-opts">${q.opts.map((o,i)=>`<button class="quiz-opt" onclick="${fn}(${i})">${o}</button>`).join('')}</div><div class="quiz-result" id="qr_${areaId}"></div>`;
+    document.getElementById(areaId).innerHTML=`<div class="quiz-num">문제 ${idx+1} / ${quizzes.length}</div><div class="quiz-q">${q.q}</div><div class="quiz-opts">${q.opts.map((o,i)=>`<button class="quiz-opt" onclick="window['${fn}'](${i})">${o}</button>`).join('')}</div><button class="quiz-hint-btn" onclick="window['peek_${areaId}']()">정답 보기</button><div class="quiz-result" id="qr_${areaId}"></div><div id="qn_${areaId}" style="display:none;margin-top:12px;text-align:right;"><button class="quiz-next-btn" onclick="window['next_${areaId}']()">${idx+1<quizzes.length?'다음 문제 →':'완료 ✓'}</button></div>`;
     window[fn]=function(i){
       document.querySelectorAll(`#${areaId} .quiz-opt`).forEach((o,j)=>{o.disabled=true;if(j===q.ans)o.classList.add('correct');else if(j===i)o.classList.add('wrong');});
       const res=document.getElementById('qr_'+areaId);
       res.className='quiz-result show '+(i===q.ans?'ok':'fail');
       res.innerHTML=i===q.ans?'✓ 정답! '+q.explain:'✗ 정답은 <strong>"'+q.opts[q.ans]+'"</strong>입니다. '+q.explain;
-      setTimeout(()=>{idx++;render();},2000);
+      document.getElementById('qn_'+areaId).style.display='block';
     };
+    window['peek_'+areaId]=function(){
+      document.querySelectorAll(`#${areaId} .quiz-opt`).forEach(o=>o.disabled=true);
+      document.querySelectorAll(`#${areaId} .quiz-opt`)[q.ans].classList.add('correct');
+      const hb=document.querySelector(`#${areaId} .quiz-hint-btn`);
+      if(hb)hb.style.display='none';
+      const res=document.getElementById('qr_'+areaId);
+      res.className='quiz-result show ok';
+      res.innerHTML='정답: <strong>"'+q.opts[q.ans]+'"</strong>. '+q.explain;
+      document.getElementById('qn_'+areaId).style.display='block';
+    };
+    window['next_'+areaId]=function(){idx++;render();};
   }
   render();
 }
 makeQuiz('q0-area','d0-banner',[
-  {q:"한 생 동안 가장 많이 일어나는 마음은?",opts:["재생연결심","바왕가","인식과정","죽음심"],ans:1,explain:"바왕가(잠재의식)는 인식과정이 없을 때 끊임없이 흐르며 한 생 동안 가장 많이 일어납니다."},
-  {q:"재생연결심·바왕가·죽음심의 관계는?",opts:["모두 다른 마음","동일한 업에 의해 결정된 같은 마음","순서대로 발전하는 마음","선정에 따라 달라지는 마음"],ans:1,explain:"재생연결심·바왕가·죽음심은 동일한 과거 업에 의해 결정된 같은 종류의 마음입니다."},
+  {q:"한 생 동안 가장 많이 일어나는 마음은?",opts:["재생연결심","바왕가(잠재의식)","인식과정 마음","죽음심"],ans:1,explain:"바왕가(잠재의식)는 인식과정이 없을 때 끊임없이 흘러 한 생 동안 가장 많이 일어납니다."},
+  {q:"재생연결심·바왕가·죽음심의 관계는?",opts:["모두 다른 마음","동일한 업에 의해 결정된 같은 종류의 마음","순서대로 발전하는 마음","선정에 따라 달라지는 마음"],ans:1,explain:"재생연결심·바왕가·죽음심은 동일한 과거 업에 의해 결정된 같은 종류의 마음입니다."},
+  {q:"재생연결심(Paṭisandhi-citta)의 역할은?",opts:["새로운 업을 짓는 것","새 생의 시작점을 잇는 것","선정에 드는 것","번뇌를 소멸하는 것"],ans:1,explain:"재생연결심(paṭisandhi = '다시 잇는 것')은 죽음심이 사라진 직후 새 생을 연결하는 첫 마음입니다."},
+  {q:"바왕가(Bhavaṅga)의 기능은?",opts:["새로운 업을 짓기","인식과정을 일으키기","한 생의 연속성을 유지하기","선정을 발생시키기"],ans:2,explain:"바왕가(bhava + aṅga = 존재의 구성 요소)는 인식과정이 없는 동안 흘러 생의 연속성을 유지합니다."},
+  {q:"죽음 직전 마음에 나타날 수 있는 세 가지 대상은?",opts:["마음·마음부수·물질","업(Kamma)·업표(Kamma-nimitta)·취처(Gati-nimitta)","선정·도심·과심","전생·현생·내생"],ans:1,explain:"죽음 직전 대상은 업(과거 행위)·업표(업의 상징 이미지)·취처(다음 생의 이미지) 세 가지입니다."},
+  {q:"'업표(Kamma-nimitta)'란 무엇인가요?",opts:["다음 생에서 받을 결과","행해진 업의 상징적 이미지·도구·장면","취할 존재계의 이미지","죽음의 신호"],ans:1,explain:"업표(kamma-nimitta)는 과거에 행한 업과 관련된 상징적 이미지(예: 보시할 때 사용한 그릇, 살생 장면 등)입니다."},
+  {q:"재생연결심이 일어나는 시점은?",opts:["죽음심이 사라진 직후","죽음심이 사라지기 직전","도심이 일어난 후","바왕가가 멈춘 후"],ans:0,explain:"죽음심이 사라지는 그 찰나 직후, 새 생의 첫 마음인 재생연결심이 일어납니다."},
+  {q:"아비담마에서 '죽음(死)'의 정의는?",opts:["의식이 완전히 없어지는 것","죽음심(Cuti-citta)이 일어나 그 생의 마지막 마음이 되는 것","몸이 차가워지는 것","바왕가가 영원히 멈추는 것"],ans:1,explain:"아비담마에서 죽음은 죽음심(cuti-citta)이 한 찰나 일어나는 것으로, 그 찰나에 그 생이 끝납니다."},
+  {q:"인식과정이 없는 동안 흐르는 마음은?",opts:["조사심","등록심","바왕가(잠재의식)","재생연결심"],ans:2,explain:"바왕가는 잠재의식의 흐름으로, 깊은 수면·기절 등 인식과정이 없을 때 끊임없이 흐릅니다."},
+  {q:"재생연결심의 대상은 무엇인가요?",opts:["현재 생의 마지막 대상","임종 직전 마음이 취한 대상(업·업표·취처 중 하나)","아무 대상도 없음","열반"],ans:1,explain:"재생연결심은 전생의 죽음 직전 마음이 취한 대상(업·업표·취처 중 하나)을 동일하게 취합니다."},
 ]);
 makeQuiz('q1-area','d1-banner',[
   {q:"죽음 직전 마음에 나타나는 대상이 아닌 것은?",opts:["업(Kamma)","업표(Kamma-nimitta)","취처(Gati-nimitta)","바왕가"],ans:3,explain:"죽음 직전 대상은 업·업표·취처 세 가지입니다. 바왕가는 대상이 아닌 잠재의식의 흐름입니다."},
   {q:"재생연결심과 죽음심의 관계는?",opts:["완전히 다른 마음","동일한 대상을 가진 같은 종류의 마음","죽음심이 재생연결심으로 변함","인과관계가 없음"],ans:1,explain:"재생연결심과 죽음심은 동일한 대상을 가지며, 죽음심이 사라지는 찰나와 동시에 재생연결심이 일어납니다."},
+  {q:"'취처(Gati-nimitta)'란 무엇인가요?",opts:["현재 살고 있는 곳","다음 생에 태어날 존재계의 이미지나 장면","전생의 기억","죽음의 장소"],ans:1,explain:"취처(gati-nimitta)는 다음 생의 목적지·환경을 나타내는 이미지(예: 불꽃·숲·궁전 등)입니다."},
+  {q:"죽음 직전 나쁜 업이 대상으로 나타날 경우 어디에 재생할 수 있나요?",opts:["천상","인간계","악처(지옥·축생·아귀·아수라)","열반"],ans:2,explain:"죽음 직전에 무거운 불선 업이 나타나면 악처(지옥·아귀·축생·아수라)에 재생할 수 있습니다."},
+  {q:"아비담마에서 죽음 직전에 가장 강력한 영향을 미치는 업은?",opts:["임종 당시의 마지막 생각","가장 무거운 업(Garuka-kamma)","공덕 회향","오계 준수"],ans:1,explain:"가장 무거운 업(Garuka-kamma — 선정이나 5역죄 등)은 죽음 직전 반드시 나타나 재생을 결정합니다."},
+  {q:"임종 직전에 업표(Kamma-nimitta)로 나타날 수 있는 것은?",opts:["다음 생의 환경","과거에 행한 업의 상징(도구·행위·장면)","태어날 어머니의 얼굴","아무것도 나타나지 않음"],ans:1,explain:"업표(kamma-nimitta)는 임종자가 과거에 행한 업을 상징하는 도구·장면·형상으로 나타납니다."},
+  {q:"죽음 직전 선정에 든 사람은 어디에 재생하나요?",opts:["욕계 천상","성취한 선정의 색계 또는 무색계 범천계","인간계","무조건 열반에 듦"],ans:1,explain:"선정을 성취하고 그것이 마지막 업이 된 사람은 해당 선정의 범천계(색계 또는 무색계)에 재생합니다."},
+  {q:"'가장 무거운 업(Garuka-kamma)'으로 선업의 예는?",opts:["오계 준수","삼보에 귀의","선정(Jhāna) 성취","보시(布施) 실천"],ans:2,explain:"선업 중 가장 무거운 것은 선정(Jhāna) 성취입니다. 선정은 죽음 직전 반드시 나타나 범천계에 재생시킵니다."},
+  {q:"아비담마에서 죽음의 과정을 이해하는 실천적 목적은?",opts:["죽음을 피하기 위해","재생을 반복하기 위해","임종 시 좋은 마음 상태를 유지하여 선처에 재생하거나 해탈하기 위해","과거생을 기억하기 위해"],ans:2,explain:"죽음 과정에 대한 이해는 임종 시 선업이나 수행 마음을 일으켜 좋은 재생 또는 열반을 향하도록 돕습니다."},
+  {q:"임종 직전 '업(Kamma)' 자체가 대상으로 나타날 때 그 내용은?",opts:["미래에 할 선행","과거에 실제로 행한 행위","현재의 몸 상태","다음 생의 환경"],ans:1,explain:"업(kamma)이 대상으로 나타날 때는 과거에 실제로 행한 선업 또는 불선업 행위 자체가 마음에 나타납니다."},
 ]);
 makeQuiz('q2-area','d2-banner',[
-  {q:"아나함(불환)만 재생할 수 있는 특별한 곳은?",opts:["도리천","범중천","정거천(淨居天)","비상비비상처"],ans:2,explain:"정거천은 아나함 전용 거처입니다. 욕계 탐진을 소멸한 아나함은 정거천에서 열반에 듭니다."},
-  {q:"31 존재계 중 악처(악한 곳)는 몇 처인가요?",opts:["3처","4처","5처","7처"],ans:1,explain:"악처는 지옥·축생·아귀·아수라 4처입니다."},
+  {q:"아나함(불환)만 재생할 수 있는 특별한 곳은?",opts:["도리천","범중천","정거천(淨居天)","비상비비상처"],ans:2,explain:"정거천(Suddhāvāsa)은 아나함 전용 거처입니다. 욕계 탐진을 소멸한 아나함은 정거천에서 열반에 듭니다."},
+  {q:"31 존재계 중 악처(악한 곳)는 몇 처인가요?",opts:["3처","4처","5처","7처"],ans:1,explain:"악처(apāya)는 지옥·축생·아귀·아수라 4처입니다."},
+  {q:"31 존재계는 크게 몇 가지 계(界)로 나뉘나요?",opts:["2가지(욕계·색계)","3가지(욕계·색계·무색계)","4가지(욕계·색계·무색계·출세간)","5가지"],ans:1,explain:"31 존재계는 욕계(11처)·색계(16처)·무색계(4처) = 3계로 나뉩니다."},
+  {q:"욕계 선처(善處)는 몇 처인가요?",opts:["4처","7처","11처","14처"],ans:1,explain:"욕계 선처는 인간계(1) + 욕계 6천(六天) = 7처입니다."},
+  {q:"색계 범천계는 모두 몇 처인가요?",opts:["5처","11처","16처","18처"],ans:2,explain:"색계 범천은 1~3선 각 3처 + 4선 7처(광과천·무상유정천·정거천 5처 포함) = 총 16처입니다."},
+  {q:"무색계는 모두 몇 처인가요?",opts:["2처","4처","6처","8처"],ans:1,explain:"무색계는 공무변처·식무변처·무소유처·비상비비상처 4처입니다."},
+  {q:"아비담마에서 인간계가 수행에 유리한 이유는?",opts:["물질적으로 가장 풍요롭기 때문","선업과 불선업 모두 지을 수 있고 사성제를 들을 수 있기 때문","가장 오래 살 수 있기 때문","고통이 전혀 없기 때문"],ans:1,explain:"인간계는 고락이 공존하여 무상·고·무아를 직접 관찰할 수 있고, 붓다의 가르침을 들어 해탈할 수 있습니다."},
+  {q:"아수라(Asura)는 어느 존재계에 속하나요?",opts:["천상계(욕계 6천)","욕계 악처","색계 하층","무색계"],ans:1,explain:"아수라(asura)는 지옥·아귀·축생과 함께 욕계 악처 4처에 속합니다."},
+  {q:"정거천(Suddhāvāsa)은 몇 처인가요?",opts:["1처","3처","5처","7처"],ans:2,explain:"정거천은 무번천·무열천·선현천·선견천·색구경천 5처이며, 아나함만이 여기에 태어납니다."},
+  {q:"31 존재계에서 욕계(欲界)에 포함되는 총 처의 수는?",opts:["7처","8처","11처","14처"],ans:2,explain:"욕계는 악처 4처 + 인간계 1처 + 욕계 6천 = 총 11처입니다."},
 ]);
 </script>
 </body>

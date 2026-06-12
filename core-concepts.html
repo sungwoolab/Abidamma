@@ -144,6 +144,10 @@
     .quiz-result.show{display:block;}
     .quiz-result.ok{background:var(--green-bg);color:var(--green);}
     .quiz-result.fail{background:var(--red-bg);color:var(--red);}
+    .quiz-hint-btn{margin-top:8px;padding:5px 12px;border-radius:7px;border:1px solid var(--border);background:transparent;font-size:11px;color:var(--text3);cursor:pointer;font-family:'Noto Sans KR',sans-serif;transition:all 0.15s;}
+    .quiz-hint-btn:hover{border-color:var(--accent);color:var(--accent);}
+    .quiz-next-btn{padding:9px 22px;border-radius:99px;background:var(--accent);color:#fff;font-size:13px;font-weight:500;border:none;cursor:pointer;font-family:'Noto Sans KR',sans-serif;transition:all 0.15s;}
+    .quiz-next-btn:hover{opacity:0.88;}
 
     /* ── 완료 배너 ── */
     .done-banner{display:none;background:var(--green-bg);border:1px solid var(--green);border-radius:12px;padding:20px;text-align:center;margin-top:14px;}
@@ -172,7 +176,7 @@
     <a class="nav-item" href="index.html">홈</a>
     <a class="nav-item" href="intro.html">입문</a>
     <button class="nav-item on">핵심개념</button>
-    <a class="nav-item" href="abhidhamma_vithi.html">인식과정</a>
+    <a class="nav-item" href="vithi.html">인식과정</a>
     <button class="nav-item">삶과재생</button>
     <button class="nav-item">심화·응용</button>
   </div>
@@ -569,7 +573,7 @@
         <div class="done-title">🎉 핵심개념 단계 완료!</div>
         <div class="done-sub">4가지 궁극적 실재를 모두 마쳤습니다.</div>
         <a class="done-btn" href="index.html">홈으로 돌아가기</a>
-        <a class="done-btn" href="abhidhamma_vithi.html">인식과정으로 →</a>
+        <a class="done-btn" href="vithi.html">인식과정으로 →</a>
       </div>
     </div>
   </div>
@@ -654,34 +658,81 @@ function makeQuiz(areaId, bannerId, quizzes) {
     document.getElementById(areaId).innerHTML = `
       <div class="quiz-num">문제 ${idx+1} / ${quizzes.length}</div>
       <div class="quiz-q">${q.q}</div>
-      <div class="quiz-opts">${q.opts.map((o,i)=>`<button class="quiz-opt" onclick="${fn}(${i})">${o}</button>`).join('')}</div>
-      <div class="quiz-result" id="qr_${areaId}"></div>`;
+      <div class="quiz-opts">${q.opts.map((o,i)=>`<button class="quiz-opt" onclick="window['${fn}'](${i})">${o}</button>`).join('')}</div>
+      <button class="quiz-hint-btn" onclick="window['peek_${areaId}']()">정답 보기</button>
+      <div class="quiz-result" id="qr_${areaId}"></div>
+      <div id="qn_${areaId}" style="display:none;margin-top:12px;text-align:right;">
+        <button class="quiz-next-btn" onclick="window['next_${areaId}']()">${idx+1 < quizzes.length ? '다음 문제 →' : '완료 ✓'}</button>
+      </div>`;
     window[fn] = function(i) {
       document.querySelectorAll(`#${areaId} .quiz-opt`).forEach((o,j) => { o.disabled=true; if(j===q.ans) o.classList.add('correct'); else if(j===i) o.classList.add('wrong'); });
       const res = document.getElementById('qr_'+areaId);
       res.className = 'quiz-result show ' + (i===q.ans?'ok':'fail');
       res.innerHTML = i===q.ans ? '✓ 정답! '+q.explain : '✗ 정답은 <strong>"'+q.opts[q.ans]+'"</strong>입니다. '+q.explain;
-      setTimeout(() => { idx++; render(); }, 2000);
+      document.getElementById('qn_'+areaId).style.display = 'block';
     };
+    window['peek_'+areaId] = function() {
+      document.querySelectorAll(`#${areaId} .quiz-opt`).forEach(o => o.disabled = true);
+      document.querySelectorAll(`#${areaId} .quiz-opt`)[q.ans].classList.add('correct');
+      const hb = document.querySelector(`#${areaId} .quiz-hint-btn`);
+      if (hb) hb.style.display = 'none';
+      const res = document.getElementById('qr_'+areaId);
+      res.className = 'quiz-result show ok';
+      res.innerHTML = '정답: <strong>"'+q.opts[q.ans]+'"</strong>. '+q.explain;
+      document.getElementById('qn_'+areaId).style.display = 'block';
+    };
+    window['next_'+areaId] = function() { idx++; render(); };
   }
   render();
 }
 
 makeQuiz('q0-area','d0-banner',[
   { q:"마음(Citta) 89종 중 가장 많은 종류를 차지하는 것은?", opts:["욕계 마음","색계 마음","무색계 마음","출세간 마음"], ans:0, explain:"욕계 마음은 54종으로 가장 많습니다. 색계 15종, 무색계 12종, 출세간 8종 순입니다." },
-  { q:"출세간 마음에 해당하지 않는 것은?", opts:["예류도·과","일래도·과","선정심·과","아라한도·과"], ans:2, explain:"선정심은 색계·무색계 마음입니다. 출세간 마음은 예류·일래·불환·아라한의 도심과 과심 8종(또는 40종)입니다." },
+  { q:"출세간 마음에 해당하지 않는 것은?", opts:["예류도·과","일래도·과","선정심(禪定心)","아라한도·과"], ans:2, explain:"선정심은 색계·무색계 마음입니다. 출세간 마음은 예류·일래·불환·아라한의 도심과 과심 8종(또는 40종)입니다." },
+  { q:"욕계 마음(Kāmāvacara citta) 54종의 올바른 구성은?", opts:["불선 12 + 무기 18 + 아름다운 24 = 54","불선 12 + 무기 16 + 선 26 = 54","불선 14 + 무기 20 + 선 20 = 54","불선 10 + 무기 22 + 선 22 = 54"], ans:0, explain:"욕계 마음은 불선 12종 + 무기(ahetuka) 18종 + 아름다운(sobhana) 24종 = 54종입니다." },
+  { q:"마음(Citta)의 가장 기본적인 기능은?", opts:["느끼는 것(感受)","대상을 아는 것(vijānāti)","의도하는 것(Cetanā)","집중하는 것(Ekaggatā)"], ans:1, explain:"마음의 본질은 대상을 인식하고 아는 것(vijānāti)입니다. 느낌·의도·집중은 마음부수의 기능입니다." },
+  { q:"89종 마음을 121종으로 확대할 때 늘어나는 마음은?", opts:["욕계 마음","색계 마음","무색계 마음","출세간 마음"], ans:3, explain:"출세간 마음은 도·과 각 4쌍 = 8종이지만, 선정 단계를 적용하면 5×8 = 40종으로 확대되어 121종이 됩니다." },
+  { q:"색계 선마음(Rūpāvacara kusala citta)은 몇 종인가요?", opts:["5종","10종","15종","20종"], ans:0, explain:"색계 선마음은 초선~제5선 각 1종씩 5종입니다. 선과(phala)·행(kiriyā)까지 합하면 15종 전체입니다." },
+  { q:"악불선 마음(Akusala citta)은 모두 몇 종인가요?", opts:["8종","12종","14종","18종"], ans:1, explain:"불선 마음은 탐욕근 8종 + 성냄근 2종 + 어리석음근 2종 = 총 12종입니다." },
+  { q:"바왕가(Bhavaṅga)는 어느 마음 그룹에 속하나요?", opts:["욕계 선마음","욕계 무기심(Ahetuka)","불선 마음","출세간 마음"], ans:1, explain:"바왕가는 원인 없이(ahetuka) 과보로 일어나는 욕계 무기심에 속하며, 잠재의식의 흐름을 담당합니다." },
+  { q:"무색계 선마음(Arūpāvacara kusala citta)은 몇 종인가요?", opts:["4종","8종","12종","16종"], ans:0, explain:"무색계 선마음은 공무변처~비상비비상처 4가지 선정 각 1종씩 4종입니다(선과·행 포함 12종)." },
+  { q:"'무기심(無記心, Abyākata citta)'에 해당하지 않는 것은?", opts:["바왕가(잠재의식)","오식(五識)","탐욕심","과보심(Vipāka)"], ans:2, explain:"탐욕심은 불선 마음입니다. 무기심은 선도 불선도 아닌 과보(vipāka)와 기능(kiriyā) 마음입니다." },
 ]);
 makeQuiz('q1-area','d1-banner',[
-  { q:"속행(자와나) 찰나에서 '전체를 리드한다'고 설명되는 마음부수는?", opts:["마음챙김(Sati)","의도(Cetanā)","지혜(Paññā)","집중(Ekaggatā)"], ans:1, explain:"의도(Cetanā)는 마음을 이끌고 조직하는 역할을 하며, 업(業)을 형성하는 핵심 마음부수입니다." },
+  { q:"속행(자와나) 찰나에서 업(業)을 형성하는 핵심 마음부수는?", opts:["마음챙김(Sati)","의도(Cetanā)","지혜(Paññā)","집중(Ekaggatā)"], ans:1, explain:"의도(Cetanā)는 마음을 이끌고 조직하는 역할을 하며, 업(業)을 형성하는 핵심 마음부수입니다." },
   { q:"모든 불선 마음에 공통으로 나타나는 마음부수 2가지는?", opts:["탐욕·성냄","어리석음·들뜸","사견·의심","질투·인색"], ans:1, explain:"어리석음(Moha)과 들뜸(Uddhacca)은 모든 불선 마음에 공통으로 나타납니다." },
+  { q:"마음부수 52종 중 모든 마음에 공통으로 나타나는 '공통 마음부수'는 몇 종인가요?", opts:["7종","13종","25종","52종"], ans:0, explain:"공통 마음부수(Sabbacittasādhāraṇa)는 접촉·느낌·인식·의도·집중·생명력·주의 총 7종입니다." },
+  { q:"'아름다운 마음부수(Sobhana cetasika)'는 몇 종인가요?", opts:["19종","25종","36종","52종"], ans:1, explain:"아름다운 마음부수는 공통 19종 + 절제 3종 + 무량심 2종 + 지혜 1종 = 총 25종입니다." },
+  { q:"불선 마음부수(Akusala cetasika)는 모두 몇 종인가요?", opts:["8종","12종","14종","18종"], ans:2, explain:"불선 마음부수는 탐욕·사견·만·어리석음·의심·들뜸 등을 포함해 총 14종입니다." },
+  { q:"탐욕(Lobha)·성냄(Dosa)·어리석음(Moha)은 어느 마음부수 그룹에 속하나요?", opts:["아름다운 마음부수","공통 마음부수","불선 마음부수","특수 마음부수"], ans:2, explain:"탐욕·성냄·어리석음은 3가지 불선 뿌리로, 불선 마음부수에 속합니다." },
+  { q:"마음챙김(Sati)과 지혜(Paññā)가 속하는 마음부수 그룹은?", opts:["공통 마음부수","불선 마음부수","아름다운 마음부수(Sobhana)","출세간 전용 마음부수"], ans:2, explain:"마음챙김과 지혜는 아름다운 마음부수(Sobhana cetasika)에 속하며, 선·무기 마음에 동반합니다." },
+  { q:"느낌(Vedanā)은 어느 마음부수 그룹에 속하나요?", opts:["아름다운(Sobhana)","불선(Akusala)","공통(Sabbacittasādhāraṇa)","출세간 전용"], ans:2, explain:"느낌(Vedanā)은 모든 마음에 공통으로 나타나는 '공통 마음부수'에 속합니다." },
+  { q:"마음부수 중 유일하게 '연민(Karuṇā)'이 나타나는 마음은?", opts:["모든 마음","불선 마음","아름다운 마음에만","출세간 마음에만"], ans:2, explain:"연민(Karuṇā)은 아름다운 마음부수로, 선·무기 등 아름다운 마음에서만 나타납니다." },
+  { q:"의심(Vicikicchā)을 동반하는 불선 마음은 총 몇 종인가요?", opts:["2종","1종","4종","12종"], ans:1, explain:"의심(Vicikicchā)이 동반하는 마음은 어리석음뿌리 + 의심 = 단 1종의 불선 마음뿐입니다." },
 ]);
 makeQuiz('q2-area','d2-banner',[
-  { q:"물질의 생성 원인 4가지에 해당하지 않는 것은?", opts:["마음","업","바람(욕망)","온도"], ans:2, explain:"물질의 4가지 생성 원인은 마음·업·온도·음식입니다. 바람(욕망)은 해당되지 않습니다." },
+  { q:"물질의 생성 원인 4가지에 해당하지 않는 것은?", opts:["마음(心)","업(業)","바람(욕망)","온도(火)"], ans:2, explain:"물질의 4가지 생성 원인은 마음·업·온도·음식(영양소)입니다. 바람(욕망)은 해당되지 않습니다." },
   { q:"아비담마에서 물질은 총 몇 종으로 분류되나요?", opts:["18종","24종","28종","32종"], ans:2, explain:"물질은 4대 원소 4종 + 파생 물질 24종 = 총 28종으로 분류됩니다." },
+  { q:"물질의 4대 원소(Mahābhūta)에 속하지 않는 것은?", opts:["땅(地)","물(水)","바람(風)","소리(聲)"], ans:3, explain:"소리(聲)는 4대 원소가 아니라 파생 물질(upādā-rūpa)에 속합니다. 4대 원소는 땅·물·불·바람입니다." },
+  { q:"물질 중 '감각기관(빠사다 rūpa)'은 몇 종인가요?", opts:["4종","5종","6종","7종"], ans:1, explain:"감각기관(빠사다)은 눈·귀·코·혀·몸 총 5종입니다. 각각 해당 감각 대상을 수용하는 물질입니다." },
+  { q:"물질의 특성 중 '변화한다(ruppati)'는 의미는?", opts:["항상 존재한다","조건에 의해 변화·파괴된다","스스로 인식한다","마음에 의존한다"], ans:1, explain:"물질(rūpa)의 어원적 의미는 '변화하고 파괴되는 것(ruppati)'으로, 무상의 특성을 나타냅니다." },
+  { q:"업(業)에 의해 생성되는 물질(業生色)에 해당하는 것은?", opts:["소리(聲)","땀·눈물","감각기관(빠사다)","음식에서 생기는 영양소"], ans:2, explain:"감각기관(眼·耳·鼻·舌·身)은 과거 업에 의해 생성되는 업생색(kamma-ja rūpa)입니다." },
+  { q:"물질 중 4대 원소를 제외한 나머지를 무엇이라 하나요?", opts:["아름다운 물질","파생 물질(upādā-rūpa)","조건 물질","의지 물질"], ans:1, explain:"4대 원소에서 파생된 나머지 24종 물질을 파생 물질(upādā-rūpa)이라 합니다." },
+  { q:"마음에 의해 생성되는 물질(心生色)의 예는?", opts:["눈(眼根)","표현(Viññatti — 몸짓·언어)","뼈와 살","음식에서 생기는 영양소"], ans:1, explain:"몸짓(身表, kāya-viññatti)과 언어(語表, vacī-viññatti)는 마음에 의해 생성되는 심생색(citta-ja rūpa)입니다." },
+  { q:"'명근(命根, jīvitindriya)'은 어느 물질 그룹에 속하나요?", opts:["4대 원소(Mahābhūta)","감각기관(빠사다)","파생 물질(upādā-rūpa)","마음생색(心生色)"], ans:2, explain:"명근(jīvitindriya)은 생명을 유지하는 원소로 파생 물질 24종에 속합니다." },
+  { q:"물질의 가장 작은 집합 단위로 아비담마에서 다루는 것은?", opts:["원자(anu)","칼라파(kalāpa)","마음찰나(citta-khaṇa)","뉴런(neuron)"], ans:1, explain:"칼라파(kalāpa)는 더 이상 나눌 수 없는 최소 물질 집합 단위로, 최소 8종의 물질로 구성됩니다." },
 ]);
 makeQuiz('q3-area','d3-banner',[
   { q:"4법 중 유일한 무위법(無爲法)은?", opts:["마음(Citta)","마음부수(Cetasika)","물질(Rūpa)","열반(Nibbāna)"], ans:3, explain:"열반만이 조건 지어지지 않은 무위법입니다. 나머지 3법은 조건에 의해 생멸하는 유위법입니다." },
-  { q:"아라한이 살아있는 동안의 열반을 무엇이라 하나요?", opts:["무여열반","유여열반","완전열반","반열반"], ans:1, explain:"유여열반(Sa-upādisesa)은 아라한이 살아있는 동안, 오온이 아직 남아있는 상태의 열반입니다." },
+  { q:"아라한이 살아있는 동안의 열반을 무엇이라 하나요?", opts:["무여열반","유여열반(Sa-upādisesa)","완전열반","반열반"], ans:1, explain:"유여열반(Sa-upādisesa)은 아라한이 살아있는 동안, 오온이 아직 남아있는 상태의 열반입니다." },
+  { q:"아라한이 완전히 죽어 다시 태어나지 않는 상태의 열반은?", opts:["무여열반(Anupādisesa-nibbāna)","유여열반","예류과","공열반"], ans:0, explain:"무여열반(Anupādisesa)은 아라한의 죽음 이후 오온이 남지 않는 완전한 열반입니다." },
+  { q:"열반의 특성으로 올바른 것은?", opts:["생멸한다","조건에 의해 일어난다","무위·불사·적정(寂靜)이다","마음과 함께 일어난다"], ans:2, explain:"열반은 생겨남도 사라짐도 없고(無爲), 죽음이 없으며(不死), 완전한 고요함(寂靜)이 그 특성입니다." },
+  { q:"열반을 직접 대상으로 삼는 마음은?", opts:["바왕가","욕계 선마음","출세간 도심과 과심","마음챙김 마음"], ans:2, explain:"출세간 도심(magga-citta)과 과심(phala-citta)만이 열반을 직접 대상으로 인식합니다." },
+  { q:"'열반(Nibbāna)'의 빠알리어 어원적 의미는?", opts:["자유로운 흐름","갈애(渴愛, taṇhā)의 불꽃이 꺼진 것","진리의 빛","마음의 청정"], ans:1, explain:"Nibbāna = ni(부정) + vāna(갈애·얽매임) = 갈애의 불꽃이 꺼진 것, 얽매임에서 벗어난 상태입니다." },
+  { q:"예류자(Sotāpanna)가 확실히 소멸시킨 3가지 족쇄(Saṃyojana)는?", opts:["탐욕·성냄·어리석음","유신견·계금취견·의심","아만·무명·탐욕","탐욕·질투·인색"], ans:1, explain:"예류자는 유신견(有身見)·계금취견(戒禁取見)·의심(疑) 3가지 족쇄를 소멸시킵니다." },
+  { q:"불환자(아나함)가 완전히 소멸시킨 욕계의 번뇌는?", opts:["유신견만","유신견과 계금취견","욕계 탐욕(欲貪)과 성냄(嗔)","모든 탐욕과 성냄"], ans:2, explain:"아나함(불환)은 욕계 탐욕과 성냄을 완전히 소멸하여 욕계에 다시 태어나지 않습니다." },
+  { q:"아비담마에서 열반은 4법 중 어디에 해당하나요?", opts:["마음(Citta)에 포함","마음부수(Cetasika)에 포함","물질(Rūpa)에 포함","독립적인 제4의 법"], ans:3, explain:"열반은 마음·마음부수·물질과 별개의 독립적인 제4의 궁극적 실재(paramattha)입니다." },
+  { q:"아라한과심(Arahatta-phala citta)이 일어날 때의 대상은?", opts:["몸(身)","마음부수","열반(Nibbāna)","업(Kamma)"], ans:2, explain:"아라한과심은 열반(Nibbāna)을 직접 대상으로 하며, 완전한 해탈의 경험입니다." },
 ]);
 </script>
 </body>

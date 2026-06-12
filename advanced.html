@@ -69,6 +69,10 @@
     .quiz-result.show{display:block;}
     .quiz-result.ok{background:var(--green-bg);color:var(--green);}
     .quiz-result.fail{background:var(--red-bg);color:var(--red);}
+    .quiz-hint-btn{margin-top:8px;padding:5px 12px;border-radius:7px;border:1px solid var(--border);background:transparent;font-size:11px;color:var(--text3);cursor:pointer;font-family:'Noto Sans KR',sans-serif;transition:all 0.15s;}
+    .quiz-hint-btn:hover{border-color:var(--accent);color:var(--accent);}
+    .quiz-next-btn{padding:9px 22px;border-radius:99px;background:var(--accent);color:#fff;font-size:13px;font-weight:500;border:none;cursor:pointer;font-family:'Noto Sans KR',sans-serif;transition:all 0.15s;}
+    .quiz-next-btn:hover{opacity:0.88;}
     .done-banner{display:none;background:var(--green-bg);border:1px solid var(--green);border-radius:12px;padding:20px;text-align:center;margin-top:14px;}
     .done-banner.show{display:block;}
     .done-title{font-size:16px;font-weight:500;color:var(--green);margin-bottom:5px;}
@@ -268,24 +272,51 @@ function makeQuiz(areaId,bannerId,quizzes){
   function render(){
     if(idx>=quizzes.length){document.getElementById(areaId).innerHTML='<p style="font-size:14px;color:var(--green);font-weight:500;text-align:center;padding:14px 0;">🎉 퀴즈 완료!</p>';document.getElementById(bannerId).classList.add('show');return;}
     const q=quizzes[idx];
-    document.getElementById(areaId).innerHTML=`<div class="quiz-num">문제 ${idx+1} / ${quizzes.length}</div><div class="quiz-q">${q.q}</div><div class="quiz-opts">${q.opts.map((o,i)=>`<button class="quiz-opt" onclick="${fn}(${i})">${o}</button>`).join('')}</div><div class="quiz-result" id="qr_${areaId}"></div>`;
+    document.getElementById(areaId).innerHTML=`<div class="quiz-num">문제 ${idx+1} / ${quizzes.length}</div><div class="quiz-q">${q.q}</div><div class="quiz-opts">${q.opts.map((o,i)=>`<button class="quiz-opt" onclick="window['${fn}'](${i})">${o}</button>`).join('')}</div><button class="quiz-hint-btn" onclick="window['peek_${areaId}']()">정답 보기</button><div class="quiz-result" id="qr_${areaId}"></div><div id="qn_${areaId}" style="display:none;margin-top:12px;text-align:right;"><button class="quiz-next-btn" onclick="window['next_${areaId}']()">${idx+1<quizzes.length?'다음 문제 →':'완료 ✓'}</button></div>`;
     window[fn]=function(i){
       document.querySelectorAll(`#${areaId} .quiz-opt`).forEach((o,j)=>{o.disabled=true;if(j===q.ans)o.classList.add('correct');else if(j===i)o.classList.add('wrong');});
       const res=document.getElementById('qr_'+areaId);
       res.className='quiz-result show '+(i===q.ans?'ok':'fail');
       res.innerHTML=i===q.ans?'✓ 정답! '+q.explain:'✗ 정답은 <strong>"'+q.opts[q.ans]+'"</strong>입니다. '+q.explain;
-      setTimeout(()=>{idx++;render();},2000);
+      document.getElementById('qn_'+areaId).style.display='block';
     };
+    window['peek_'+areaId]=function(){
+      document.querySelectorAll(`#${areaId} .quiz-opt`).forEach(o=>o.disabled=true);
+      document.querySelectorAll(`#${areaId} .quiz-opt`)[q.ans].classList.add('correct');
+      const hb=document.querySelector(`#${areaId} .quiz-hint-btn`);
+      if(hb)hb.style.display='none';
+      const res=document.getElementById('qr_'+areaId);
+      res.className='quiz-result show ok';
+      res.innerHTML='정답: <strong>"'+q.opts[q.ans]+'"</strong>. '+q.explain;
+      document.getElementById('qn_'+areaId).style.display='block';
+    };
+    window['next_'+areaId]=function(){idx++;render();};
   }
   render();
 }
 makeQuiz('q0-area','d0-banner',[
   {q:"발취론(Paṭṭhāna)에서 설명하는 조건 관계의 수는?",opts:["12가지","18가지","24가지","52가지"],ans:2,explain:"발취론은 24가지 조건 관계를 설명합니다. 이것이 아비담마의 정점으로 불립니다."},
-  {q:"반복(Āsevana) 조건이 설명하는 것은?",opts:["업이 과보를 만드는 것","속행이 반복될수록 업의 힘이 강해지는 것","마음과 물질의 관계","대상이 마음을 조건 짓는 것"],ans:1,explain:"반복(Āsevana) 조건은 속행(자와나)이 반복될수록 습관과 업의 힘이 강해짐을 설명합니다. 수행 습관의 이론적 근거입니다."},
+  {q:"반복(Āsevana) 조건이 설명하는 것은?",opts:["업이 과보를 만드는 것","속행이 반복될수록 업의 힘이 강해지는 것","마음과 물질의 관계","대상이 마음을 조건 짓는 것"],ans:1,explain:"반복(Āsevana) 조건은 속행(자와나)이 반복될수록 습관과 업의 힘이 강해짐을 설명합니다."},
+  {q:"마음과 마음부수가 서로를 지지하는 조건은?",opts:["인식 대상 조건(Ārammaṇa)","상호 조건(Aññamañña-paccaya)","업 조건(Kamma)","반복 조건(Āsevana)"],ans:1,explain:"상호 조건(Aññamañña)은 마음과 마음부수처럼 동시에 일어나는 법들이 서로를 지지하는 조건입니다."},
+  {q:"'인식 대상 조건(Ārammaṇa-paccaya)'의 의미는?",opts:["업이 결과를 만드는 방식","대상이 마음을 일어나게 하는 방식","마음이 물질을 생성하는 방식","두 법이 동시에 일어나는 방식"],ans:1,explain:"인식 대상 조건(ārammaṇa)은 외부 대상(색·성·향 등)이 마음을 일어나게 하는 조건입니다."},
+  {q:"'업 조건(Kamma-paccaya)'에서 의도(Cetanā)가 하는 역할은?",opts:["미래 과보를 생성하는 역할","현재 마음을 집중시키는 역할","열반을 대상으로 하는 역할","마음부수를 억제하는 역할"],ans:0,explain:"업 조건(kamma-paccaya)에서 의도(cetanā)는 미래에 결과(vipāka)를 생성하는 힘으로 작용합니다."},
+  {q:"'수반 조건(Sampayutta-paccaya)'의 특징은?",opts:["동일한 물질 사이에만 작용","동일한 대상·찰나·토대를 가진 마음과 마음부수 사이","완전히 다른 시간에 작용","무기심에만 해당"],ans:1,explain:"수반 조건(sampayutta)은 동일한 대상·찰나·토대를 공유하는 마음과 마음부수 사이의 조건입니다."},
+  {q:"'등무간 조건(Anantara-paccaya)'의 의미는?",opts:["사이에 다른 법이 없이 바로 뒤따르는 조건","동시에 일어나는 조건","물질이 마음을 조건 짓는 방식","업이 과보를 만드는 과정"],ans:0,explain:"등무간 조건(anantara)은 한 마음이 사라진 직후 다른 마음이 간격 없이 바로 뒤따르는 조건입니다."},
+  {q:"'지지 조건(Nissaya-paccaya)'의 예는?",opts:["속행이 반복되는 것","마음이 토대 물질(vatthu)에 의지하는 것","대상이 마음에 나타나는 것","마음과 마음부수가 동시에 일어나는 것"],ans:1,explain:"지지 조건(nissaya)의 예: 마음은 눈·귀 등 6가지 토대 물질에 의지하여 일어납니다."},
+  {q:"'현존 조건(Atthi)'과 '부재 조건(Natthi)'의 차이는?",opts:["작용하는 법의 종류가 다름","현존하는 법이 조건 짓는 것 vs 사라진 법이 조건 짓는 것","색계와 욕계의 차이","선업과 불선업의 차이"],ans:1,explain:"현존 조건(atthi)은 현재 존재하는 법이 조건이 되는 것, 부재 조건(natthi)은 막 사라진 법이 다음 마음에 조건이 되는 것입니다."},
+  {q:"24조건 이론을 통해 아비담마가 보여주는 핵심 진리는?",opts:["모든 법은 독립적으로 존재한다","모든 법은 조건에 의해 생멸하며 상호 의존한다","오직 마음만이 실재한다","물질은 조건과 무관하다"],ans:1,explain:"24조건은 모든 현상이 원인과 조건에 의해 생멸하는 연기(緣起)의 정밀한 분석으로, 무아(無我)를 확증합니다."},
 ]);
 makeQuiz('q1-area','d1-banner',[
-  {q:"위빠사나 수행에서 졸음이 올 때 작동하는 불선 마음부수는?",opts:["탐욕·사견","해태·혼침","성냄·질투","의심·후회"],ans:1,explain:"졸음은 해태(Thīna)와 혼침(Middha) 마음부수가 작동할 때 나타납니다. 노력(Viriya)을 강화하는 것이 대치법입니다."},
+  {q:"위빠사나 수행에서 졸음이 올 때 작동하는 불선 마음부수는?",opts:["탐욕·사견","해태·혼침(Thīna-Middha)","성냄·질투","의심·후회"],ans:1,explain:"졸음은 해태(Thīna)와 혼침(Middha) 마음부수가 작동할 때 나타납니다. 노력(Viriya)을 강화하는 것이 대치법입니다."},
   {q:"아비담마에서 수행 중 망상이 일어났다고 알아차리는 순간, 그 망상의 마음은?",opts:["더 강해진다","지속된다","이미 사라졌다","억압된다"],ans:2,explain:"마음은 찰나적으로 생멸합니다. 알아차리는 순간은 이미 새로운 마음이 일어난 것이므로, 망상의 마음은 이미 사라진 상태입니다."},
+  {q:"위빠사나에서 직접 관찰하는 3가지 특성(法印)은?",opts:["탐욕·성냄·어리석음","무상(Anicca)·고(Dukkha)·무아(Anattā)","색·수·상·행·식","땅·물·불·바람"],ans:1,explain:"위빠사나는 모든 현상의 무상(無常)·고(苦)·무아(無我) 세 가지 특성을 직접 관찰합니다."},
+  {q:"아비담마의 마음 찰나적 생멸 통찰을 통해 확인되는 법인(法印)은?",opts:["고(苦)만","무상(無常)과 무아(無我)","연기(緣起)만","공(空)만"],ans:1,explain:"마음이 찰나적으로 생멸함을 보면 무상(無常)이, 고정된 '나'가 없음을 보면 무아(無我)가 확인됩니다."},
+  {q:"위빠사나 수행 중 들뜸(Uddhacca)이 일어날 때의 올바른 대응은?",opts:["수행을 즉시 멈추기","평정(Upekkhā)과 마음챙김으로 알아차리기","성냄으로 대응하기","무시하기"],ans:1,explain:"들뜸(Uddhacca)은 불선 마음부수이므로, 판단 없이 알아차리는 마음챙김과 평정으로 대응합니다."},
+  {q:"아비담마 관점에서 '자아(自我)'가 없다는 무아(Anattā)의 근거는?",opts:["몸이 변하기 때문","마음과 물질이 조건에 따라 생멸하며 고정된 '나'가 없기 때문","붓다가 그렇게 말했기 때문","생각이 빠르기 때문"],ans:1,explain:"마음과 물질이 조건에 의해 찰나적으로 생멸하므로, 지속하는 고정된 '자아'는 존재하지 않습니다."},
+  {q:"위빠사나 10가지 오염원 중 하나인 '광명(Obhāsa)'이 장애가 되는 이유는?",opts:["빛이 너무 밝아서 눈을 멀게 하기 때문","그 경험에 집착하여 수행 진전이 정체될 수 있기 때문","다른 수행자들을 방해하기 때문","불선 마음부수이기 때문"],ans:1,explain:"위빠사나 오염원(vipassanūpakkilesa)은 광명·희열·경안 등 좋은 경험에 집착하게 만들어 수행이 정체되는 것입니다."},
+  {q:"아비담마에서 지혜(Paññā) 마음부수를 계발하는 목적은?",opts:["더 많은 선정을 얻기 위해","사성제를 꿰뚫어 번뇌를 소멸하기 위해","아비담마 이론을 암기하기 위해","신통력을 얻기 위해"],ans:1,explain:"지혜(paññā)는 사성제·연기·삼법인을 꿰뚫는 통찰로, 번뇌를 소멸하고 열반에 이르는 직접 원인입니다."},
+  {q:"위빠사나에서 '도심(Magga-citta)'이 일어나기 직전에 발생하는 마음은?",opts:["바왕가","등록심","종성심(Gotrabhū-citta)","조사심"],ans:2,explain:"종성심(Gotrabhū)은 범부의 흐름을 끊고 성자의 반열에 오르는 문턱의 마음으로, 도심 직전 한 찰나 발생합니다."},
+  {q:"아비담마의 이해가 수행에 도움이 되는 이유는?",opts:["교리를 암기하면 자동으로 해탈하기 때문","마음과 물질의 생멸 구조를 알면 집착의 대상이 없음을 통찰하는 데 도움이 되기 때문","스승 없이도 수행할 수 있기 때문","선정이 저절로 생기기 때문"],ans:1,explain:"아비담마는 마음·물질·조건의 구조를 밝혀, 수행자가 '나'라고 집착할 실체가 없음을 지성적·경험적으로 통찰하도록 돕습니다."},
 ]);
 </script>
 </body>

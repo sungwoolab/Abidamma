@@ -111,6 +111,10 @@
     .quiz-result.show{display:block;}
     .quiz-result.ok{background:var(--green-bg);color:var(--green);}
     .quiz-result.fail{background:var(--red-bg);color:var(--red);}
+    .quiz-hint-btn{margin-top:8px;padding:5px 12px;border-radius:7px;border:1px solid var(--border);background:transparent;font-size:11px;color:var(--text3);cursor:pointer;font-family:'Noto Sans KR',sans-serif;transition:all 0.15s;}
+    .quiz-hint-btn:hover{border-color:var(--accent);color:var(--accent);}
+    .quiz-next-btn{padding:9px 22px;border-radius:99px;background:var(--accent);color:#fff;font-size:13px;font-weight:500;border:none;cursor:pointer;font-family:'Noto Sans KR',sans-serif;transition:all 0.15s;}
+    .quiz-next-btn:hover{opacity:0.88;}
     .done-banner{display:none;background:var(--green-bg);border:1px solid var(--green);border-radius:12px;padding:20px;text-align:center;margin-top:14px;}
     .done-banner.show{display:block;}
     .done-title{font-size:15px;font-weight:500;color:var(--green);margin-bottom:5px;}
@@ -165,6 +169,24 @@
       <div class="sec-title">17심찰나 — 확인</div>
       <div id="q0-area"></div>
       <div class="done-banner" id="d0-banner">
+        <div class="done-title">✓ 완료!</div><div class="done-sub">아래의 의문 인식과정도 학습하세요.</div>
+        <button class="done-btn-sec" onclick="switchSub(1)">선정 인식과정으로 건너뛰기 →</button>
+      </div>
+    </div>
+    <div class="sec">
+      <div class="sec-tag">개념 비교</div>
+      <div class="sec-title">의문(意門) 인식과정</div>
+      <div class="sec-body">
+        <p>마음은 오감문뿐 아니라 <strong>의문(意門, manodvāra)</strong>을 통해서도 대상을 인식합니다. 기억·개념 사유·선정 진입 등이 모두 의문 인식과정으로 일어납니다.</p>
+        <div class="hl hl-teal"><strong>오문 인식과정</strong> (눈·귀·코·혀·몸을 통해):<br>바왕가 동요 → 차단 → 오문전향 → 오식 → 받아들임 → 조사 → 확정 → 속행×7 → 등록×2<br><br><strong>의문 인식과정</strong> (마음을 통해 — 기억·개념·선정 등):<br>바왕가 동요 → 차단 → <strong>의문전향</strong> → 속행×7 → 등록×2</div>
+        <p>오문 과정에는 오식·받아들임·조사·확정 4단계가 있지만, 의문 과정에는 이 4단계가 없고 <strong>의문전향 다음에 바로 속행</strong>이 이어집니다.</p>
+      </div>
+    </div>
+    <div class="sec">
+      <div class="sec-tag">퀴즈</div>
+      <div class="sec-title">오문·의문 인식과정 — 통합 확인</div>
+      <div id="q3-area"></div>
+      <div class="done-banner" id="d3-banner">
         <div class="done-title">✓ 완료!</div><div class="done-sub">다음은 선정 인식과정입니다.</div>
         <button class="done-btn-sec" onclick="switchSub(1)">선정 인식과정 →</button>
       </div>
@@ -417,28 +439,75 @@ function makeQuiz(areaId,bannerId,quizzes){
       document.getElementById(bannerId).classList.add('show');return;
     }
     const q=quizzes[idx];
-    document.getElementById(areaId).innerHTML=`<div class="quiz-num">문제 ${idx+1} / ${quizzes.length}</div><div class="quiz-q">${q.q}</div><div class="quiz-opts">${q.opts.map((o,i)=>`<button class="quiz-opt" onclick="${fn}(${i})">${o}</button>`).join('')}</div><div class="quiz-result" id="qr_${areaId}"></div>`;
+    document.getElementById(areaId).innerHTML=`<div class="quiz-num">문제 ${idx+1} / ${quizzes.length}</div><div class="quiz-q">${q.q}</div><div class="quiz-opts">${q.opts.map((o,i)=>`<button class="quiz-opt" onclick="window['${fn}'](${i})">${o}</button>`).join('')}</div><button class="quiz-hint-btn" onclick="window['peek_${areaId}']()">정답 보기</button><div class="quiz-result" id="qr_${areaId}"></div><div id="qn_${areaId}" style="display:none;margin-top:12px;text-align:right;"><button class="quiz-next-btn" onclick="window['next_${areaId}']()">${idx+1<quizzes.length?'다음 문제 →':'완료 ✓'}</button></div>`;
     window[fn]=function(i){
       document.querySelectorAll(`#${areaId} .quiz-opt`).forEach((o,j)=>{o.disabled=true;if(j===q.ans)o.classList.add('correct');else if(j===i)o.classList.add('wrong');});
       const res=document.getElementById('qr_'+areaId);
       res.className='quiz-result show '+(i===q.ans?'ok':'fail');
       res.innerHTML=i===q.ans?'✓ 정답! '+q.explain:'✗ 정답은 <strong>"'+q.opts[q.ans]+'"</strong>입니다. '+q.explain;
-      setTimeout(()=>{idx++;render();},2000);
+      document.getElementById('qn_'+areaId).style.display='block';
     };
+    window['peek_'+areaId]=function(){
+      document.querySelectorAll(`#${areaId} .quiz-opt`).forEach(o=>o.disabled=true);
+      document.querySelectorAll(`#${areaId} .quiz-opt`)[q.ans].classList.add('correct');
+      const hb=document.querySelector(`#${areaId} .quiz-hint-btn`);
+      if(hb)hb.style.display='none';
+      const res=document.getElementById('qr_'+areaId);
+      res.className='quiz-result show ok';
+      res.innerHTML='정답: <strong>"'+q.opts[q.ans]+'"</strong>. '+q.explain;
+      document.getElementById('qn_'+areaId).style.display='block';
+    };
+    window['next_'+areaId]=function(){idx++;render();};
   }
   render();
 }
 makeQuiz('q0-area','d0-banner',[
   {q:"17심찰나 중 업(業)을 짓는 핵심 찰나는?",opts:["바왕가","오식","속행(자와나)","등록"],ans:2,explain:"속행(자와나)은 7번 반복되며 업을 짓는 핵심 찰나입니다."},
-  {q:"속행 찰나에서 '전체를 리드한다'고 알려진 마음부수는?",opts:["집중(Ekaggatā)","의도(Cetanā)","느낌(Vedanā)","희열(Pīti)"],ans:1,explain:"의도(Cetanā)는 마음을 이끌고 업을 형성하는 핵심 마음부수입니다."},
+  {q:"속행 찰나에서 업을 형성하는 마음부수는?",opts:["집중(Ekaggatā)","의도(Cetanā)","느낌(Vedanā)","희열(Pīti)"],ans:1,explain:"의도(Cetanā)는 마음을 이끌고 업을 형성하는 핵심 마음부수입니다."},
+  {q:"표준 욕계 인식과정에서 속행(자와나)은 몇 번 반복되나요?",opts:["5번","7번","9번","11번"],ans:1,explain:"속행(javana)은 표준 욕계 인식과정에서 7번 반복됩니다. 이 7번의 속행이 업을 형성합니다."},
+  {q:"인식과정이 시작될 때 바왕가를 흔드는 단계는?",opts:["오식(五識)","바왕가 동요(bhavaṅga-calana)","속행","등록심"],ans:1,explain:"외부 자극이 오면 먼저 바왕가 동요(calana)가 일어난 후 바왕가 차단(upaccheda)이 일어납니다."},
+  {q:"17찰나 인식과정에서 오식(五識) 다음에 오는 마음은?",opts:["의문전향(Manodvārāvajjana)","받아들임(Sampaṭicchana)","오문전향(Pañcadvārāvajjana)","조사(Santīraṇa)"],ans:1,explain:"오문 과정: 오문전향→오식→받아들임→조사→확정→속행×7→등록×2 순서입니다."},
+  {q:"오문 인식과정에서 '조사(Santīraṇa)' 다음에 오는 마음은?",opts:["속행(자와나)","확정(Voṭṭhapana)","등록","바왕가"],ans:1,explain:"조사심이 대상을 평가한 후, 확정심(Voṭṭhapana)이 대상의 성격을 결정합니다."},
+  {q:"인식과정이 없을 때 끊임없이 흐르는 마음은?",opts:["오문전향","조사심","바왕가(Bhavaṅga)","등록심"],ans:2,explain:"바왕가(잠재의식)는 인식과정이 없는 동안 끊임없이 흘러 생의 연속성을 유지합니다."},
+  {q:"표준 욕계 인식과정에서 '등록(Tadārammaṇa)'은 최대 몇 번 일어나나요?",opts:["1번","2번","3번","5번"],ans:1,explain:"등록(tadārammaṇa)은 속행 이후 최대 2번 일어납니다. 대상이 희미할 경우 생략되기도 합니다."},
+  {q:"오문 인식과정에는 없고 의문(意門) 인식과정에서만 나타나는 마음은?",opts:["오식(五識)","조사(Santīraṇa)","의문전향(Manodvārāvajjana)","속행(Javana)"],ans:2,explain:"의문전향(manodvārāvajjana)은 의문 과정 전용입니다. 오문 과정에는 오문전향(pañcadvārāvajjana)이 해당합니다."},
+  {q:"오문 인식과정에서 대상의 성격(善·不善)을 결정하는 마음은?",opts:["오식(五識)","받아들임","확정(Voṭṭhapana)","등록"],ans:2,explain:"확정심(Voṭṭhapana)은 조사심 이후에 대상의 성격을 결정하여 속행의 방향을 정합니다."},
 ]);
 makeQuiz('q1-area','d1-banner',[
-  {q:"색계 초선에서 이선으로 진입할 때 탈락하는 선정지는?",opts:["희열(Pīti)","집중(Ekaggatā)","일으킨 생각(Vitakka)","즐거움(Sukha)"],ans:2,explain:"이선에서는 일으킨 생각(Vitakka)이 탈락합니다. 지속적 고찰·희열·즐거움·집중이 남습니다."},
+  {q:"색계 초선에서 이선으로 진입할 때 탈락하는 선정지는?",opts:["희열(Pīti)","집중(Ekaggatā)","일으킨 생각(Vitakka)","즐거움(Sukha)"],ans:2,explain:"이선에서는 일으킨 생각(Vitakka)과 지속적 고찰(Vicāra)이 탈락합니다. 희열·즐거움·집중이 남습니다."},
   {q:"무색계 선정이 아닌 것은?",opts:["공무변처","비상비비상처","삼선(Tatiya-jhāna)","무소유처"],ans:2,explain:"삼선은 색계 선정입니다. 무색계 선정은 공무변처·식무변처·무소유처·비상비비상처 4가지입니다."},
+  {q:"색계 오선(제5선정)에만 남아있는 선정지는?",opts:["희열과 집중","평정(Upekkhā)과 집중(Ekaggatā)","즐거움과 평정","일으킨 생각과 지속 고찰"],ans:1,explain:"색계 제5선에는 즐거움(Sukha)이 평정(Upekkhā)으로 바뀌어, 평정과 집중 2가지 선정지만 남습니다."},
+  {q:"무색계 제4선정인 '비상비비상처'의 의미는?",opts:["지각이 없고 지각 아닌 것도 없는 경지","무한한 공간의 경지","식(識)이 무한한 경지","아무것도 없는 경지"],ans:0,explain:"비상비비상처(Nevasaññānāsaññāyatana)는 거친 지각은 없고 미세한 지각도 없지 않은 가장 높은 선정입니다."},
+  {q:"색계 초선의 5가지 선정지는?",opts:["일으킨 생각·지속 고찰·희열·즐거움·집중","일으킨 생각·지속 고찰·희열·평정·집중","희열·즐거움·평정·집중·알아차림","지속 고찰·희열·즐거움·평정·집중"],ans:0,explain:"초선의 5지(五支)는 일으킨 생각(Vitakka)·지속 고찰(Vicāra)·희열(Pīti)·즐거움(Sukha)·집중(Ekaggatā)입니다."},
+  {q:"아비담마에서 색계 선정의 종류(선마음 기준)는 몇 종인가요?",opts:["4종","5종","8종","9종"],ans:1,explain:"색계 선정심은 초선~제5선 5종(선·과·행 = 15종)입니다. 4선 체계와 5선 체계가 병용됩니다."},
+  {q:"선정에서 나온 후 내관(Vipassanā)을 닦을 때 대상을 인식하는 문은?",opts:["안문(眼門)","이문(耳門)","의문(意門)","전체 오문"],ans:2,explain:"위빠사나 수행에서 선정 후 일어나는 마음과 물질의 관찰은 의문(意門) 인식과정을 통합니다."},
+  {q:"무색계 선정을 닦기 위한 선행 조건은?",opts:["오문 인식과정을 완전히 멈추기","색계 4선(또는 5선)을 성취 후 물질 개념을 초월하기","욕계 선마음을 7번 반복하기","마음부수 52종 암기"],ans:1,explain:"무색계 선정은 색계 최고 선정을 성취한 뒤 물질(색상)의 관념을 초월함으로써 진입합니다."},
+  {q:"색계 선정(jhāna) 마음이 속하는 분류는?",opts:["욕계 선마음","색계 선마음(Rūpāvacara kusala)","무기 마음","불선 마음"],ans:1,explain:"색계 선정 마음은 욕계를 초월한 색계 선마음(Rūpāvacara kusala citta)에 속합니다."},
+  {q:"'선정 후 도심이 일어나는 인식과정'을 무엇이라 하나요?",opts:["오문 인식과정","등록 인식과정","도 인식과정(Magga-vīthi)","속행 인식과정"],ans:2,explain:"선정(특히 위빠사나 선정) 이후 지혜가 성숙하여 도심이 일어나는 과정을 도 인식과정(Magga-vīthi)이라 합니다."},
 ]);
 makeQuiz('q2-area','d2-banner',[
   {q:"욕계 탐욕과 성냄을 완전히 소멸시키는 단계는?",opts:["수다원","사다함","아나함","아라한"],ans:2,explain:"아나함(불환)은 욕계 탐욕·성냄을 완전히 소멸시킵니다. 그래서 욕계에 다시 오지 않습니다."},
   {q:"도심(Magga-citta)이 일어난 직후 이어지는 마음은?",opts:["바왕가","속행심","과심(Phala-citta)","등록심"],ans:2,explain:"도심이 한 찰나 일어나 번뇌를 끊은 뒤, 바로 과심(Phala-citta)이 2~3찰나 이어집니다."},
+  {q:"아비담마에서 깨달음의 4단계 중 최초 단계는?",opts:["아라한도","불환도","일래도","예류도(Sotāpatti-magga)"],ans:3,explain:"예류도(Sotāpatti-magga citta)가 일어나는 순간이 최초의 출세간 마음이며, 번뇌를 처음으로 끊는 단계입니다."},
+  {q:"예류자(수다원)가 반드시 소멸하는 3가지 족쇄는?",opts:["탐욕·성냄·어리석음","유신견·계금취견·의심","아만·무명·탐욕","탐욕·질투·인색"],ans:1,explain:"수다원은 유신견(有身見)·계금취견(戒禁取見)·의심(疑) 세 가지 족쇄를 완전히 소멸합니다."},
+  {q:"도심(Magga-citta)이 한 인식과정에서 일어나는 횟수는?",opts:["7번(자와나)","2~3번","오직 1번","10번"],ans:2,explain:"도심은 한 인식과정에서 오직 1찰나만 일어납니다. 이 단 한 찰나에 해당 단계의 번뇌가 소멸됩니다."},
+  {q:"아라한도심(Arahatta-magga citta)이 소멸시키는 것은?",opts:["유신견만","욕계 탐욕·성냄","색계·무색계 탐욕·아만·무명 등 나머지 모든 번뇌","의심과 계금취견"],ans:2,explain:"아라한도심은 이전 세 단계에서 소멸되지 않은 색계·무색계 탐욕·아만·들뜸·무명 등 모든 남은 번뇌를 소멸합니다."},
+  {q:"과심(Phala-citta)은 도심 이후 몇 찰나 동안 일어나나요?",opts:["1찰나","2~3찰나","7찰나","무한히"],ans:1,explain:"과심(Phala-citta)은 도심 직후 2~3찰나 동안 열반을 대상으로 일어납니다."},
+  {q:"도·과 인식과정에서 도심 직전에 일어나는 특별한 마음은?",opts:["바왕가","등록심","종성심(Gotrabhū-citta)","조사심"],ans:2,explain:"종성심(Gotrabhū)은 범부에서 성자(聖者)로 넘어가는 문턱의 마음으로, 도심이 일어나기 직전에 한 찰나 발생합니다."},
+  {q:"열반을 대상으로 직접 인식하는 마음은?",opts:["욕계 선마음","바왕가","도심과 과심","색계 선정심"],ans:2,explain:"도심(magga-citta)과 과심(phala-citta)만이 열반(Nibbāna)을 직접 대상으로 인식합니다."},
+  {q:"아라한은 모든 번뇌가 소멸한 후 어떤 마음을 짓나요?",opts:["불선 마음","선마음(Kusala)","기능심(Kiriyā-citta)","출세간 도심"],ans:2,explain:"아라한은 새로운 업을 짓지 않으므로 선·불선이 아닌 단순 기능만 하는 기능심(kiriyā-citta)을 짓습니다."},
+]);
+makeQuiz('q3-area','d3-banner',[
+  {q:"오문 인식과정과 의문 인식과정의 가장 큰 차이점은?",opts:["속행 횟수가 다르다","오문에만 오식·받아들임·조사·확정이 있다","의문 과정에는 바왕가가 없다","두 과정은 완전히 동일하다"],ans:1,explain:"오문에는 오식·받아들임·조사·확정 4단계가 있지만, 의문 과정에는 이 과정이 없고 의문전향 바로 다음에 속행이 이어집니다."},
+  {q:"의문 인식과정에서 속행(자와나) 바로 앞에 일어나는 마음은?",opts:["조사(Santīraṇa)","확정(Voṭṭhapana)","의문전향(Manodvārāvajjana)","바왕가"],ans:2,explain:"의문 과정: 바왕가 동요 → 차단 → 의문전향 → 속행×7. 의문전향 다음에 바로 속행이 이어집니다."},
+  {q:"오문 인식과정에서 바왕가 차단 이후 가장 먼저 일어나는 마음은?",opts:["오식(五識)","오문전향(Pañcadvārāvajjana)","받아들임(Sampaṭicchana)","조사(Santīraṇa)"],ans:1,explain:"바왕가가 끊긴 후 오문전향(pañcadvārāvajjana)이 일어나 마음을 감각문으로 돌립니다. 그 다음에 오식이 일어납니다."},
+  {q:"의문 인식과정이 취할 수 있는 대상의 범위는?",opts:["오감 자극(색·성·향·미·촉)만","개념·기억·상상 등 정신적 대상만","오감 대상과 정신적 대상 모두(6종 전체)","선정 대상만"],ans:2,explain:"의문(意門) 인식과정은 색·성·향·미·촉의 감각 대상과 법경(法境, 개념·기억·선정 등) 모두를 대상으로 취할 수 있습니다."},
+  {q:"오문 인식과정에서 '받아들임(Sampaṭicchana)'의 역할은?",opts:["대상의 선·불선을 결정","오식이 경험한 대상을 이어받아 다음 심에 전달","업을 형성하는 것","바왕가 흐름을 끊는 것"],ans:1,explain:"받아들임(sampaṭicchana)은 오식이 경험한 대상을 받아서 다음 찰나의 조사심에 전달하는 역할을 합니다."},
+  {q:"오문 과정과 의문 과정이 모두 포함하는 공통 찰나는?",opts:["오문전향·오식","바왕가 동요·차단·속행×7","오식·받아들임","조사·확정"],ans:1,explain:"두 과정 모두 바왕가 동요·차단으로 시작하고, 속행(자와나)×7과 등록(tadārammaṇa)이 공통으로 포함됩니다."},
+  {q:"오문 과정의 '확정(Voṭṭhapana)'은 어떤 역할을 하나요?",opts:["대상을 직접 감각적으로 경험","조사심의 결과를 바탕으로 속행의 방향(선·불선)을 결정","업을 형성하는 것","바왕가 흐름을 끊는 것"],ans:1,explain:"확정심(voṭṭhapana)은 조사심의 검토 결과를 받아, 이어지는 속행이 선·불선 중 어느 쪽으로 일어날지를 결정합니다."},
+  {q:"위빠사나에서 호흡의 감각(촉각)을 알아차릴 때 일어나는 인식과정은?",opts:["신문(身門) 오문 인식과정","의문 인식과정","선정 인식과정","도·과 인식과정"],ans:0,explain:"호흡의 물리적 감각(접촉)은 신근(身根, kāya-pasāda)을 통한 신문(身門) 오문 인식과정으로 인식됩니다."},
+  {q:"기억이나 개념을 사유할 때 일어나는 인식과정은?",opts:["오문 인식과정","의문 인식과정","도·과 인식과정","선정 인식과정"],ans:1,explain:"기억·개념·상상 등 정신적 사유는 신체 감각을 통하지 않으므로 의문(意門) 인식과정으로 일어납니다."},
+  {q:"의문 인식과정이 오문 인식과정보다 찰나 수가 적은 이유는?",opts:["속행 횟수가 더 적어서","오식·받아들임·조사·확정 4단계가 없어서","등록이 일어나지 않아서","바왕가 동요가 없어서"],ans:1,explain:"의문 과정에는 오식·받아들임·조사·확정 4단계가 없고 의문전향 직후 속행이 이어지므로, 오문 과정의 17찰나보다 찰나 수가 줄어듭니다."},
 ]);
 </script>
 </body>
